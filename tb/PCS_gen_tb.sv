@@ -38,14 +38,22 @@ module PCS_generator_tb;
     .clk(clk),
     .i_rst_n(i_rst_n),
     .i_valid(i_valid),
-    .i_random(i_random),
-    .i_data_sel(i_data_sel),
+    .i_random_0(i_random),
+    .i_random_1(),
+    .i_data_sel_0(i_data_sel),
+    .i_data_sel_1(),
     .o_frame_0(o_frame_0),
     .o_frame_1(o_frame_1),
     .o_frame_2(o_frame_2),
     .o_frame_3(o_frame_3),
-    .o_transcoder(o_transcoder),
-    .o_scrambler(o_scrambler)
+    .o_frame_4(),
+    .o_frame_5(),
+    .o_frame_6(),
+    .o_frame_7(),
+    .o_transcoder_0(o_transcoder),
+    .o_transcoder_1(),
+    .o_scrambler_0(o_scrambler),
+    .o_scrambler_1()
   );
 
 always #5  clk = ~clk ;

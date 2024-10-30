@@ -11,8 +11,8 @@ module PCS_generator
     parameter PROB                 = 5                       /* Probability of inserting control byte */                                                                                                                                                                            
 )
 (
+    output logic [TRANSCODER_WIDTH  - 1 : 0] o_scrambler_0   /* Output scrambler                     */                                                                                                                                                                             ,
     output logic [TRANSCODER_WIDTH  - 1 : 0] o_scrambler_1   /* Output scrambler                     */                                                                                                                                                                             ,
-    output logic [TRANSCODER_WIDTH  - 1 : 0] o_scrambler_2   /* Output scrambler                     */                                                                                                                                                                             ,
     output logic [TRANSCODER_WIDTH  - 1 : 0] o_transcoder_0  /* Output transcoder                    */                                                                                                                                                                             ,
     output logic [TRANSCODER_WIDTH  - 1 : 0] o_transcoder_1  /* Output transcoder                    */                                                                                                                                                                             ,
     output logic [FRAME_WIDTH       - 1 : 0] o_frame_0     /* Output frame 0                         */                                                                                                                                                                             ,
@@ -159,10 +159,10 @@ task automatic generate_frame(
 endtask
 
 task automatic encode_frame(
-    input  logic [DATA_WIDTH - 1 : 0] frame_reg_0 /* Frame register 0 */                                                                                                                                                                                                            ,
-    input  logic [DATA_WIDTH - 1 : 0] frame_reg_1 /* Frame register 1 */                                                                                                                                                                                                            ,
-    input  logic [DATA_WIDTH - 1 : 0] frame_reg_2 /* Frame register 2 */                                                                                                                                                                                                            ,
-    input  logic [DATA_WIDTH - 1 : 0] frame_reg_3 /* Frame register 3 */                                                                                                                                                                                                            ,
+    input  logic [FRAME_WIDTH - 1 : 0] frame_reg_0 /* Frame register 0 */                                                                                                                                                                                                            ,
+    input  logic [FRAME_WIDTH - 1 : 0] frame_reg_1 /* Frame register 1 */                                                                                                                                                                                                            ,
+    input  logic [FRAME_WIDTH - 1 : 0] frame_reg_2 /* Frame register 2 */                                                                                                                                                                                                            ,
+    input  logic [FRAME_WIDTH - 1 : 0] frame_reg_3 /* Frame register 3 */                                                                                                                                                                                                            ,
     output logic[TRANSCODER_WIDTH - 1 : 0] o_transcoder
 )                                                                                                                                                                                                                                                                                   ;                                      
     // transcoder output
