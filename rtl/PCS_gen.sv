@@ -159,6 +159,10 @@ task automatic generate_frame(
 endtask
 
 task automatic encode_frame(
+    input  logic [DATA_WIDTH - 1 : 0] frame_reg_0 /* Frame register 0 */                                                                                                                                                                                                            ,
+    input  logic [DATA_WIDTH - 1 : 0] frame_reg_1 /* Frame register 1 */                                                                                                                                                                                                            ,
+    input  logic [DATA_WIDTH - 1 : 0] frame_reg_2 /* Frame register 2 */                                                                                                                                                                                                            ,
+    input  logic [DATA_WIDTH - 1 : 0] frame_reg_3 /* Frame register 3 */                                                                                                                                                                                                            ,
     output logic[TRANSCODER_WIDTH - 1 : 0] o_transcoder
 )                                                                                                                                                                                                                                                                                   ;                                      
     // transcoder output
@@ -251,8 +255,8 @@ always_ff @(posedge clk or negedge i_rst_n) begin
             frame_reg_6 <= {((i_data_sel_1[2] == 1) ? DATA_SYNC : CTRL_SYNC), FIXED_PATTERN_2}                                                                                                                                                                                      ;
             frame_reg_7 <= {((i_data_sel_1[3] == 1) ? DATA_SYNC : CTRL_SYNC), FIXED_PATTERN_3}                                                                                                                                                                                      ;
        end
-       encode_frame(transcoder_reg_0)                                                                                                                                                                                                                                               ;
-       encode_frame(transcoder_reg_1)                                                                                                                                                                                                                                               ;
+       encode_frame(frame_reg_0, frame_reg_1, frame_reg_2, frame_reg_3, transcoder_reg_0)                                                                                                                                                                                           ;
+       encode_frame(frame_reg_4, frame_reg_5, frame_reg_6, frame_reg_7, transcoder_reg_1)                                                                                                                                                                                           ;
        scrambler(scrambled_data_reg_0, transcoder_reg_0)                                                                                                                                                                                                                            ;
        scrambler(scrambled_data_reg_1, transcoder_reg_1)                                                                                                                                                                                                                            ;                 
     end
