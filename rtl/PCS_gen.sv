@@ -149,7 +149,8 @@ task automatic generate_frame(
         // Choose a random control byte between 0 to 2              
         // Choose a byte position to insert control byte                
         case ($urandom($time + i_number) % 11)              
-            0: begin                
+            0: begin
+                // [ FF ] [ CTRL CTRL CTRL CTRL CTRL CTRL CTRL  CTRL ]                
                 txd =  {MII_IDLE[CONTROL_WIDTH - 2 : 0]                                                                                                                                                                                                                                             , 
                         MII_IDLE[CONTROL_WIDTH - 2 : 0]                                                                                                                                                                                                                                             , 
                         MII_IDLE[CONTROL_WIDTH - 2 : 0]                                                                                                                                                                                                                                             , 
@@ -160,43 +161,53 @@ task automatic generate_frame(
                         MII_IDLE[CONTROL_WIDTH - 2 : 0]}                                                                                                                                                                                                                                            ;
                 txc = TXC_TYPE_FIELD_0                                                                                                                                                                                                                                                              ;    
             end             
-            1: begin                
+            1: begin
+                // [ B0 ] [ FB DATA DATA DATA DATA DATA DATA DATA ]                
                 txd = {MII_START, data_block[DATA_WIDTH - 9 : 0]}                                                                                                                                                                                                                                   ;                                       
                 txc = TXC_TYPE_FIELD_1                                                                                                                                                                                                                                                              ; 
             end             
-            2: begin                
+            2: begin 
+                // [ F1 ] [ 9C DATA DATA DATA 00 00 00 00 ]               
                 txd = {MII_SEQ, data_block[DATA_WIDTH - 9 -: 24], 32'b0}                                                                                                                                                                                                                            ;                                       
                 txc = TXC_TYPE_FIELD_2                                                                                                                                                                                                                                                              ; 
             end             
-            3: begin                
+            3: begin       
+                // [ FF ] [ FD IDLE IDLE IDLE IDLE IDLE IDLE IDLE ]         
                 txd = {MII_TERM, {7{MII_IDLE}}}                                                                                                                                                                                                                                                     ;
                 txc = TXC_TYPE_FIELD_3                                                                                                                                                                                                                                                              ;
             end             
-            4: begin                
+            4: begin       
+                // [ FE ] [ DATA FD IDLE IDLE IDLE IDLE IDLE IDLE ]         
                 txd = {data_block[DATA_WIDTH - 1 -: 8], MII_TERM, {6{MII_IDLE}}}                                                                                                                                                                                                                    ;                                               
                 txc = TXC_TYPE_FIELD_4                                                                                                                                                                                                                                                              ;            
             end             
-            5: begin                
+            5: begin  
+                // [ FD ] [ DATA DATA FD IDLE IDLE IDLE IDLE IDLE ]              
                 txd = {data_block[DATA_WIDTH - 1 -: 16], MII_TERM, {5{MII_IDLE}}}                                                                                                                                                                                                                   ;                                               
                 txc = TXC_TYPE_FIELD_5                                                                                                                                                                                                                                                              ;                                                                                                                                                                                                                                                                          
             end             
-            6: begin                
+            6: begin    
+                // [ FC ] [ DATA DATA DATA FD IDLE IDLE IDLE IDLE ]            
                 txd = {data_block[DATA_WIDTH - 1 -: 24], MII_TERM, {4{MII_IDLE}}}                                                                                                                                                                                                                   ;                                               
                 txc = TXC_TYPE_FIELD_6                                                                                                                                                                                                                                                              ;            
             end             
-            7: begin                
+            7: begin     
+                // [ FB ] [ DATA DATA DATA DATA FD IDLE IDLE IDLE ]           
                 txd = {data_block[DATA_WIDTH - 1 -: 32], MII_TERM, {3{MII_IDLE}}}                                                                                                                                                                                                                   ;                                               
                 txc = TXC_TYPE_FIELD_7                                                                                                                                                                                                                                                              ;            
             end             
-            8: begin                
+            8: begin     
+                // [ FA ] [ DATA DATA DATA DATA DATA FD IDLE IDLE ]           
                 txd = {data_block[DATA_WIDTH - 1 -: 40], MII_TERM, {2{MII_IDLE}}}                                                                                                                                                                                                                   ;                                               
                 txc = TXC_TYPE_FIELD_8                                                                                                                                                                                                                                                              ; 
             end             
-            9: begin                
+            9: begin  
+                // [ F9 ] [ DATA DATA DATA DATA DATA DATA FD IDLE ]              
                 txd = {data_block[DATA_WIDTH - 1 -: 48], MII_TERM, {MII_IDLE}}                                                                                                                                                                                                                      ;                                               
                 txc = TXC_TYPE_FIELD_9                                                                                                                                                                                                                                                              ; 
             end             
-            10: begin               
+            10: begin   
+                // [ F8 ] [ DATA DATA DATA DATA DATA DATA DATA FD ]            
                 txd = {data_block[DATA_WIDTH - 1 -: 56], MII_TERM}                                                                                                                                                                                                                                  ;                                               
                 txc = TXC_TYPE_FIELD_10                                                                                                                                                                                                                                                             ; 
             end             
@@ -212,7 +223,7 @@ endtask
 
 task automatic convert_mii(
     input  logic [CONTROL_WIDTH - 1 : 0] i_txc /* Input control byte*/                                                                                                                                                                                                                              ,
-    input  logic [DATA_WIDTH    - 1 : 0] i_txd                                                                                                                                                                                                                                                      ,
+    input  logic [DATA_WIDTH    - 1 : 0] i_txd /* Input data byte   */                                                                                                                                                                                                                              ,                 
     output logic [DATA_WIDTH    - 1 : 0] o_pcs_txd /* Output data byte*/                                                                                                                                                                                                                                                                          
 );
     logic [DATA_WIDTH - 1 : 0] pcs_txd /* Output data byte*/                                                                                                                                                                                                                                        ;
@@ -220,6 +231,7 @@ task automatic convert_mii(
     for(i = 0; i < DATA_WIDTH / 8; i = i + 11) begin
         if(i_txc[i]) begin
             case(i_txd[8* (i + 1) -1 -: 8])
+                // Replace MII control bytes with PCS control bytes
                 MII_IDLE  : pcs_txd[8*(i+1) -: 8] = CTRL_IDLE                                                                                                                                                                                                                                       ;
                 MII_LPI   : pcs_txd[8*(i+1) -: 8] = CTRL_LPI                                                                                                                                                                                                                                        ;
                 MII_START : pcs_txd[8*(i+1) -: 8] = CTRL_START                                                                                                                                                                                                                                      ;
@@ -231,7 +243,7 @@ task automatic convert_mii(
         end
     end
 
-    o_pcs_txd = pcs_txd                                                                                                                                                                                                                                                                             ;
+    o_pcs_txd = pcs_txd /* Output data byte*/                                                                                                                                                                                                                                                       ;                
 
 endtask
 
@@ -247,7 +259,8 @@ task automatic mii_to_pcs(
     convert_mii(i_txc, i_txd, pcs_data)                                                                                                                                                                                                                                                             ;
     
     if(i_txc[0]) begin
-        frame =     (i_txd == TXC_TYPE_FIELD_0)                                         ? {CTRL_SYNC, BLOCK_TYPE_FIELD_0, 
+        // Compare control byte with PCS control bytes and generate frame
+        frame =     (i_txc == TXC_TYPE_FIELD_0)                                         ? {CTRL_SYNC, BLOCK_TYPE_FIELD_0, 
                         pcs_data[DATA_WIDTH - 0*CONTROL_WIDTH - 2 -: CONTROL_WIDTH - 1], 
                         pcs_data[DATA_WIDTH - 1*CONTROL_WIDTH - 2 -: CONTROL_WIDTH - 1], 
                         pcs_data[DATA_WIDTH - 2*CONTROL_WIDTH - 2 -: CONTROL_WIDTH - 1],
@@ -256,15 +269,15 @@ task automatic mii_to_pcs(
                         pcs_data[DATA_WIDTH - 5*CONTROL_WIDTH - 2 -: CONTROL_WIDTH - 1],
                         pcs_data[DATA_WIDTH - 6*CONTROL_WIDTH - 2 -: CONTROL_WIDTH - 1],        
                         pcs_data[DATA_WIDTH - 7*CONTROL_WIDTH - 2 -: CONTROL_WIDTH - 1]}                                                                                                                                                                                                            :
-                    (i_txd == TXC_TYPE_FIELD_1 && 
+                    (i_txc == TXC_TYPE_FIELD_1 && 
                     i_txd[DATA_WIDTH - 1 -: CONTROL_WIDTH] == MII_START)                 ? {CTRL_SYNC, BLOCK_TYPE_FIELD_1,
                         i_txd  [DATA_WIDTH - 1*CONTROL_WIDTH - 1   : 0                ]}                                                                                                                                                                                                            :
-                    (i_txd == TXC_TYPE_FIELD_2 
+                    (i_txc == TXC_TYPE_FIELD_2 
                     && i_txd[DATA_WIDTH - 1 -: CONTROL_WIDTH] == MII_SEQ)                ? {CTRL_SYNC, BLOCK_TYPE_FIELD_2,
                         i_txd  [DATA_WIDTH - 1*CONTROL_WIDTH - 1  -: 3*CONTROL_WIDTH  ],
                         CTRL_SEQ[CONTROL_WIDTH - 5 : 0                                ],
                         28'b0}                                                                                                                                                                                                                                                                      :
-                    (i_txd == TXC_TYPE_FIELD_3 && 
+                    (i_txc == TXC_TYPE_FIELD_3 && 
                     i_txd[DATA_WIDTH - 0*CONTROL_WIDTH -1 -: CONTROL_WIDTH] == MII_TERM)  ? {CTRL_SYNC, BLOCK_TYPE_FIELD_3,
                         {7{1'b0}},
                         pcs_data[DATA_WIDTH - 1*CONTROL_WIDTH - 2 -: CONTROL_WIDTH - 1], 
@@ -274,7 +287,7 @@ task automatic mii_to_pcs(
                         pcs_data[DATA_WIDTH - 5*CONTROL_WIDTH - 2 -: CONTROL_WIDTH - 1],
                         pcs_data[DATA_WIDTH - 6*CONTROL_WIDTH - 2 -: CONTROL_WIDTH - 1],        
                         pcs_data[DATA_WIDTH - 7*CONTROL_WIDTH - 2 -: CONTROL_WIDTH - 1]}                                                                                                                                                                                                            :
-                    (i_txd == TXC_TYPE_FIELD_4 && 
+                    (i_txc == TXC_TYPE_FIELD_4 && 
                     i_txd[DATA_WIDTH - 1*CONTROL_WIDTH - 1 -: CONTROL_WIDTH] == MII_TERM) ? {CTRL_SYNC, BLOCK_TYPE_FIELD_4,
                         i_txd   [DATA_WIDTH - 1                   -: CONTROL_WIDTH    ],
                         {6{1'b0}},
@@ -284,7 +297,7 @@ task automatic mii_to_pcs(
                         pcs_data[DATA_WIDTH - 5*CONTROL_WIDTH - 2 -: CONTROL_WIDTH - 1],
                         pcs_data[DATA_WIDTH - 6*CONTROL_WIDTH - 2 -: CONTROL_WIDTH - 1],        
                         pcs_data[DATA_WIDTH - 7*CONTROL_WIDTH - 2 -: CONTROL_WIDTH - 1]}                                                                                                                                                                                                            :
-                    (i_txd == TXC_TYPE_FIELD_5 &&
+                    (i_txc == TXC_TYPE_FIELD_5 &&
                     i_txd[DATA_WIDTH - 2*CONTROL_WIDTH - 1 -: CONTROL_WIDTH] == MII_TERM) ? {CTRL_SYNC, BLOCK_TYPE_FIELD_5,
                         i_txd   [DATA_WIDTH - 1                   -: 2*CONTROL_WIDTH  ],
                         {5{1'b0}},
@@ -293,7 +306,7 @@ task automatic mii_to_pcs(
                         pcs_data[DATA_WIDTH - 5*CONTROL_WIDTH - 2 -: CONTROL_WIDTH - 1],
                         pcs_data[DATA_WIDTH - 6*CONTROL_WIDTH - 2 -: CONTROL_WIDTH - 1],        
                         pcs_data[DATA_WIDTH - 7*CONTROL_WIDTH - 2 -: CONTROL_WIDTH - 1]}                                                                                                                                                                                                            :
-                    (i_txd == TXC_TYPE_FIELD_6 &&
+                    (i_txc == TXC_TYPE_FIELD_6 &&
                     i_txd[DATA_WIDTH - 3*CONTROL_WIDTH - 1 -: CONTROL_WIDTH] == MII_TERM) ? {CTRL_SYNC, BLOCK_TYPE_FIELD_6,
                         i_txd   [DATA_WIDTH - 1                   -: 3*CONTROL_WIDTH  ],
                         {4{1'b0}},
@@ -301,31 +314,31 @@ task automatic mii_to_pcs(
                         pcs_data[DATA_WIDTH - 5*CONTROL_WIDTH - 2 -: CONTROL_WIDTH - 1],
                         pcs_data[DATA_WIDTH - 6*CONTROL_WIDTH - 2 -: CONTROL_WIDTH - 1],        
                         pcs_data[DATA_WIDTH - 7*CONTROL_WIDTH - 2 -: CONTROL_WIDTH - 1]}                                                                                                                                                                                                            :
-                    (i_txd == TXC_TYPE_FIELD_7 &&
+                    (i_txc == TXC_TYPE_FIELD_7 &&
                     i_txd[DATA_WIDTH - 4*CONTROL_WIDTH - 1 -: CONTROL_WIDTH] == MII_TERM) ? {CTRL_SYNC, BLOCK_TYPE_FIELD_7,
                         i_txd   [DATA_WIDTH - 1                   -: 4*CONTROL_WIDTH  ],
                         {3{1'b0}},
                         pcs_data[DATA_WIDTH - 5*CONTROL_WIDTH - 2 -: CONTROL_WIDTH - 1],
                         pcs_data[DATA_WIDTH - 6*CONTROL_WIDTH - 2 -: CONTROL_WIDTH - 1],        
                         pcs_data[DATA_WIDTH - 7*CONTROL_WIDTH - 2 -: CONTROL_WIDTH - 1]}                                                                                                                                                                                                            :
-                    (i_txd == TXC_TYPE_FIELD_8 &&
+                    (i_txc == TXC_TYPE_FIELD_8 &&
                     i_txd[DATA_WIDTH - 5*CONTROL_WIDTH - 1 -: CONTROL_WIDTH] == MII_TERM) ? {CTRL_SYNC, BLOCK_TYPE_FIELD_8,
                         i_txd   [DATA_WIDTH - 1                   -: 5*CONTROL_WIDTH  ],
                         {2{1'b0}},
                         pcs_data[DATA_WIDTH - 6*CONTROL_WIDTH - 2 -: CONTROL_WIDTH - 1],        
                         pcs_data[DATA_WIDTH - 7*CONTROL_WIDTH - 2 -: CONTROL_WIDTH - 1]}                                                                                                                                                                                                            :
-                    (i_txd == TXC_TYPE_FIELD_9 &&
+                    (i_txc == TXC_TYPE_FIELD_9 &&
                     i_txd[DATA_WIDTH - 6*CONTROL_WIDTH - 1 -: CONTROL_WIDTH] == MII_TERM) ? {CTRL_SYNC, BLOCK_TYPE_FIELD_9,
                         i_txd   [DATA_WIDTH - 1                   -: 6*CONTROL_WIDTH  ],
                         {1{1'b0}},
                         pcs_data[DATA_WIDTH - 7*CONTROL_WIDTH - 2 -: CONTROL_WIDTH - 1]}                                                                                                                                                                                                            :
-                    (i_txd == TXC_TYPE_FIELD_10 &&
+                    (i_txc == TXC_TYPE_FIELD_10 &&
                     i_txd[DATA_WIDTH - 7*CONTROL_WIDTH - 1 -: CONTROL_WIDTH] == MII_TERM) ? {CTRL_SYNC, BLOCK_TYPE_FIELD_10,
                         i_txd   [DATA_WIDTH - 1                   -: 7*CONTROL_WIDTH  ]}                                                                                                                                                                                                            :
                     {8{CTRL_ERROR}}                                                                                                                                                                                                                                                                 ;                                                
     end
     else begin
-        frame = {DATA_SYNC, i_txd}                                                                                                                                                                                                                                                                  ;
+        frame = {DATA_SYNC, i_txd}     /* Data frame */                                                                                                                                                                                                                                             ;              
     end
     o_frame = frame                                                                                                                                                                                                                                                                                 ;
 endtask
@@ -432,7 +445,8 @@ always_ff @(posedge clk or negedge i_rst_n) begin
                     generate_frame(mii_txd_2, mii_txc_2, 127)                                                                                                                                                                                                                                       ;
                     generate_frame(mii_txd_3, mii_txc_3, 065)                                                                                                                                                                                                                                       ;
                 end              
-                else begin               
+                else begin    
+                    // Select data or control byte for each output           
                     mii_txd_0 <= (i_data_sel_0[0] == 1) ? FIXED_PATTERN_0_DATA : FIXED_PATTERN_0_CTRL                                                                                                                                                                                               ;                             
                     mii_txc_0 <= (i_data_sel_0[0] == 1) ? TXC_TYPE_DATA        : TXC_TYPE_FIELD_0                                                                                                                                                                                                   ;                            
                     mii_txd_1 <= (i_data_sel_0[1] == 1) ? FIXED_PATTERN_1_DATA : FIXED_PATTERN_1_CTRL                                                                                                                                                                                               ;
@@ -442,13 +456,15 @@ always_ff @(posedge clk or negedge i_rst_n) begin
                     mii_txd_3 <= (i_data_sel_0[3] == 1) ? FIXED_PATTERN_3_DATA : FIXED_PATTERN_3_CTRL                                                                                                                                                                                               ;
                     mii_txc_3 <= (i_data_sel_0[3] == 1) ? TXC_TYPE_DATA        : TXC_TYPE_FIELD_3                                                                                                                                                                                                   ; 
                 end             
-                if(i_random_1) begin             
+                if(i_random_1) begin     
+                    // Generate random frames for each output        
                     generate_frame(mii_txd_4, mii_txc_4, 098)                                                                                                                                                                                                                                       ;
                     generate_frame(mii_txd_5, mii_txc_5, 123)                                                                                                                                                                                                                                       ;
                     generate_frame(mii_txd_6, mii_txc_6, 234)                                                                                                                                                                                                                                       ;
                     generate_frame(mii_txd_7, mii_txc_7, 098)                                                                                                                                                                                                                                       ;
                 end      
-                else begin               
+                else begin 
+                    // Select data or control byte for each output              
                     mii_txd_4 <= (i_data_sel_1[0] == 1) ? FIXED_PATTERN_0_DATA : FIXED_PATTERN_0_CTRL                                                                                                                                                                                               ;                             
                     mii_txc_4 <= (i_data_sel_1[0] == 1) ? TXC_TYPE_DATA        : TXC_TYPE_FIELD_0                                                                                                                                                                                                   ;                            
                     mii_txd_5 <= (i_data_sel_1[1] == 1) ? FIXED_PATTERN_1_DATA : FIXED_PATTERN_1_CTRL                                                                                                                                                                                               ;
@@ -463,6 +479,7 @@ always_ff @(posedge clk or negedge i_rst_n) begin
             else begin
                 case(counter)
                 3'b000: begin
+                    // Set the input as data
                     mii_txd_0 <= i_txd                                                                                                                                                                                                                                                              ;
                     mii_txc_0 <= i_txc                                                                                                                                                                                                                                                              ;
                 end                                                                                                                                                                                                                                                                 
@@ -499,6 +516,7 @@ always_ff @(posedge clk or negedge i_rst_n) begin
             end
             if(i_valid[0]) begin
                 if(counter == 0) begin
+                    // Convert MII to PCS
                     mii_to_pcs(mii_txd_1, mii_txc_1, frame_reg_1)                                                                                                                                                                                                                                   ;
                     mii_to_pcs(mii_txd_2, mii_txc_2, frame_reg_2)                                                                                                                                                                                                                                   ;
                     mii_to_pcs(mii_txd_3, mii_txc_3, frame_reg_3)                                                                                                                                                                                                                                   ;
@@ -509,6 +527,7 @@ always_ff @(posedge clk or negedge i_rst_n) begin
                     mii_to_pcs(mii_txd_7, mii_txc_7, frame_reg_7)                                                                                                                                                                                                                                   ;
                 end
                 else begin
+                    // Keep the frame registers
                     frame_reg_0 <= frame_reg_0                                                                                                                                                                                                                                                      ;
                     frame_reg_1 <= frame_reg_1                                                                                                                                                                                                                                                      ;
                     frame_reg_2 <= frame_reg_2                                                                                                                                                                                                                                                      ;
@@ -520,6 +539,7 @@ always_ff @(posedge clk or negedge i_rst_n) begin
                 end
             end
             else begin
+                // Keep the frame registers
                 frame_reg_0 <= frame_reg_0                                                                                                                                                                                                                                                          ;
                 frame_reg_1 <= frame_reg_1                                                                                                                                                                                                                                                          ;
                 frame_reg_2 <= frame_reg_2                                                                                                                                                                                                                                                          ;
@@ -531,20 +551,24 @@ always_ff @(posedge clk or negedge i_rst_n) begin
             end
             if(i_valid[1]) begin
                 if(counter == 0) begin
+                    // Encode the frame
                     encode_frame(transcoder_reg_0, frame_reg_0, frame_reg_1, frame_reg_2, frame_reg_3)                                                                                                                                                                                              ;
                     encode_frame(transcoder_reg_1, frame_reg_4, frame_reg_5, frame_reg_6, frame_reg_7)                                                                                                                                                                                              ;
                 end
                 else begin
+                    // Keep the transcoder registers
                     transcoder_reg_0 <= transcoder_reg_0                                                                                                                                                                                                                                            ;
                     transcoder_reg_1 <= transcoder_reg_1                                                                                                                                                                                                                                            ;
                 end
             end
             else begin
+                // Keep the transcoder registers
                 transcoder_reg_0 <= transcoder_reg_0                                                                                                                                                                                                                                                ;
                 transcoder_reg_1 <= transcoder_reg_1                                                                                                                                                                                                                                                ;
             end
         end
         else begin
+            // Test mode
             mii_txd_0        <= {DATA_WIDTH / CONTROL_WIDTH{CTRL_IDLE}}                                                                                                                                                                                                                             ;
             mii_txd_1        <= {DATA_WIDTH / CONTROL_WIDTH{CTRL_IDLE}}                                                                                                                                                                                                                             ;
             mii_txd_2        <= {DATA_WIDTH / CONTROL_WIDTH{CTRL_IDLE}}                                                                                                                                                                                                                             ;
@@ -574,10 +598,12 @@ always_ff @(posedge clk or negedge i_rst_n) begin
         end
         if(i_valid[2]) begin
             if(counter == 0) begin
+                // Scramble the data
                 scrambler(scrambled_data_reg_0, lfsr_value_0, transcoder_reg_0, lfsr_value_0)                                                                                                                                                                                                       ;
                 scrambler(scrambled_data_reg_1, lfsr_value_1, transcoder_reg_1, lfsr_value_1)                                                                                                                                                                                                       ;
             end
             else begin
+                // Keep the scrambled data registers
                 scrambled_data_reg_0 <= scrambled_data_reg_0                                                                                                                                                                                                                                        ;
                 scrambled_data_reg_1 <= scrambled_data_reg_1                                                                                                                                                                                                                                        ;
                 lfsr_value_0         <= lfsr_value_0                                                                                                                                                                                                                                                ;
@@ -585,6 +611,7 @@ always_ff @(posedge clk or negedge i_rst_n) begin
             end
         end
         else begin
+            // Keep the scrambled data registers
             scrambled_data_reg_0 <= scrambled_data_reg_0                                                                                                                                                                                                                                            ;
             scrambled_data_reg_1 <= scrambled_data_reg_1                                                                                                                                                                                                                                            ;
             lfsr_value_0         <= lfsr_value_0                                                                                                                                                                                                                                                    ;
@@ -593,6 +620,7 @@ always_ff @(posedge clk or negedge i_rst_n) begin
     end 
 end           
 
+// Output signals
 assign o_frame_0      = frame_reg_0                                                                                                                                                                                                                                                                 ;   
 assign o_frame_1      = frame_reg_1                                                                                                                                                                                                                                                                 ;   
 assign o_frame_2      = frame_reg_2                                                                                                                                                                                                                                                                 ;   
