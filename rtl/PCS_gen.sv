@@ -29,8 +29,8 @@ module PCS_generator
 );              
 
 localparam [HDR_WIDTH - 1 : 0]              
-    DATA_SYNC = 2'b01 /* Data sync    */                                                                                                                                                                                                                                                            ,
-    CTRL_SYNC = 2'b10 /* Control sync */                                                                                                                                                                                                                                                            ;
+    DATA_SYNC = 2'b10 /* Data sync    */                                                                                                                                                                                                                                                            ,
+    CTRL_SYNC = 2'b01 /* Control sync */                                                                                                                                                                                                                                                            ;
 
 localparam [CONTROL_WIDTH - 1 : 0]              
     CTRL_IDLE  = 8'h00   /* Control idle     */                                                                                                                                                                                                                                                     ,
@@ -251,7 +251,7 @@ task automatic revert_64_frame(
 
     frame[FRAME_WIDTH - 1 -: HDR_WIDTH] = i_frame[HDR_WIDTH -: 0]                                                                                                                                                                                                                                   ;
     for(int i = 0; i < DATA_WIDTH / 8; i = i + 1) begin
-        frame[DATA_WIDTH - 1 - CONTROL_WIDTH*i -: CONTROL_WIDTH] = i_frame[CONTROL_WIDTH * (i+1) - 1 -: CONTROL_WIDTH]                                                                                                                                                                              ;
+        frame[DATA_WIDTH - 1 - CONTROL_WIDTH*i -: CONTROL_WIDTH] = i_frame[CONTROL_WIDTH * (i+1) + HDR_WIDTH - 1 -: CONTROL_WIDTH]                                                                                                                                                                  ;
     end
 
     o_frame = frame                                                                                                                                                                                                                                                                                 ;
@@ -261,7 +261,6 @@ task automatic invert_257_frame(
     output logic [TRANSCODER_WIDTH - 1 : 0] o_frame, /* Output frame 0  */
     input  logic [TRANSCODER_WIDTH - 1 : 0] i_frame /* Input frame 0   */
 );
-
     logic [TRANSCODER_WIDTH - 1 : 0] frame                                                                                                                                                                                                                                                          ;
 
     frame[0] = i_frame[TRANSCODER_WIDTH - 1]                                                                                                                                                                                                                                                        ;
@@ -379,7 +378,7 @@ task automatic mii_to_pcs(
                     {8{CTRL_ERROR}}                                                                                                                                                                                                                                                                 ;                                                
     end
     else begin
-        frame = {i_txd, DATA_SYNC}     /* Data frame */                                                                                                                                                                                                                                             ;              
+        frame = {DATA_SYNC, i_txd}     /* Data frame */                                                                                                                                                                                                                                             ;              
     end
 
     o_frame = frame                                                                                                                                                                                                                                                                                 ;
@@ -392,7 +391,7 @@ task automatic encode_frame(
     input  logic [FRAME_WIDTH      - 1 : 0] i_frame_reg_2 /* Frame register 2 */                                                                                                                                                                                                                    ,
     input  logic [FRAME_WIDTH      - 1 : 0] i_frame_reg_3 /* Frame register 3 */                                                                                                                                                                                                                    
 );                                                                                                                                                                                                                                                                                                                                        
-    // transcoder outpu                 
+    // transcoder output                 
     logic [TRANSCODER_WIDTH     - 1 : 0] transcoder                                                                                                                                                                                                                                                 ; 
     // transcoder control heade                 
     logic [TRANSCODER_HDR_WIDTH - 1 : 0] transcoder_control_hdr                                                                                                                                                                                                                                     ;
