@@ -210,6 +210,7 @@ task automatic convert_mii(
     int i;
     for(i = 0; i < DATA_WIDTH / 8; i = i + 1) begin
         if(i_txc[i]) begin
+            $display("counter %d", i);
             case(i_txd[8* (i + 1) -1 -: 8])
                 // Replace MII control bytes with PCS control bytes
                 MII_IDLE  : begin 
@@ -234,6 +235,9 @@ task automatic convert_mii(
                     pcs_txd[8*(i+1) - 1 -: 8] = CTRL_ERROR                                                                                                                                                                                                                                          ;
                 end
             endcase 
+        end
+        else begin
+            pcs_txd[8*(i+1) - 1 -: 8] = i_txd[8*(i+1) - 1 -: 8]                                                                                                                                                                                                                                   ;
         end
     end
 
@@ -328,19 +332,36 @@ task automatic revert_257_frame(
     o_frame = frame                                                                                                                                                                                                                                                                                 ;
 endtask
 
+task automatic invert_txc_byte(
+    output logic [CONTROL_WIDTH - 1 : 0] o_txc, /* Output frame 0  */
+    input  logic [CONTROL_WIDTH - 1 : 0] i_txc /* Input frame 0   */
+);
+
+    logic [CONTROL_WIDTH - 1 : 0] txc                                                                                                                                                                                                                                                               ;
+
+    for(int i = 0; i < CONTROL_WIDTH; i = i + 1) begin
+        txc[CONTROL_WIDTH - (i+1)] = i_txc[i]                                                                                                                                                                                                                                         ;
+    end
+
+    o_txc = txc                                                                                                                                                                                                                                                                                     ;
+endtask
+
 task automatic mii_to_pcs(
     output logic [FRAME_WIDTH   - 1 : 0] o_frame /* Output frame 0  */                                                                                                                                                                                                                              ,
     input  logic [DATA_WIDTH    - 1 : 0] i_txd /* Input control byte*/                                                                                                                                                                                                                              ,
     input  logic [CONTROL_WIDTH - 1 : 0] i_txc /* Input data byte   */                                                                                                                                                                                                                              
 );
 
-    logic [DATA_WIDTH  - 1 : 0] pcs_data /* Output data byte*/                                                                                                                                                                                                                                      ;
-    logic [FRAME_WIDTH - 1 : 0] frame /* Frame 0 */                                                                                                                                                                                                                                                 ;
-    logic [FRAME_WIDTH - 1 : 0] invert_frame /* Frame 0 */                                                                                                                                                                                                                                          ;
+    logic [DATA_WIDTH    - 1 : 0] pcs_data /* Output data byte*/                                                                                                                                                                                                                                    ;
+    logic [FRAME_WIDTH   - 1 : 0] frame /* Frame 0 */                                                                                                                                                                                                                                               ;
+    logic [FRAME_WIDTH   - 1 : 0] invert_frame /* Frame 0 */                                                                                                                                                                                                                                        ;
+    logic [CONTROL_WIDTH - 1 : 0] txc /* Control byte */                                                                                                                                                                                                                                            ;
 
-    convert_mii(pcs_data, i_txc, i_txd)                                                                                                                                                                                                                                                             ;
+    invert_txc_byte(txc, i_txc)                                                                                                                                                                                                                                                                     ;
+
+    convert_mii(pcs_data, txc, i_txd)                                                                                                                                                                                                                                                             ;
     
-    if(i_txc[0]) begin
+    if(i_txc != TXC_TYPE_DATA) begin
         // Compare control byte with PCS control bytes and generate frame
         frame =     (i_txc == TXC_TYPE_FIELD_0 && 
                     i_txd[DATA_WIDTH - 0*CONTROL_WIDTH -1 -: CONTROL_WIDTH] != MII_TERM) ? {CTRL_SYNC, BLOCK_TYPE_FIELD_0, 
