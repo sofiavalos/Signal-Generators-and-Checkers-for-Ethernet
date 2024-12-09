@@ -257,7 +257,7 @@ task automatic invert_64_frame(
     
 endtask
 
-task automatic revert_64_frame(
+task automatic revert_66_frame(
     output logic [FRAME_WIDTH - 1 : 0] o_frame, /* Output frame 0  */
     input  logic [FRAME_WIDTH - 1 : 0] i_frame /* Input frame 0   */
 );
@@ -271,6 +271,21 @@ task automatic revert_64_frame(
 
     o_frame = frame                                                                                                                                                                                                                                                                                 ;
 endtask
+
+task automatic revert_64_frame(
+    output logic [DATA_WIDTH - 1 : 0] o_frame, /* Output frame 0  */
+    input  logic [DATA_WIDTH - 1 : 0] i_frame /* Input frame 0   */
+);
+
+    logic [DATA_WIDTH - 1 : 0] frame                                                                                                                                                                                                                                                                ;
+
+    for(int i = 0; i < DATA_WIDTH / 8; i = i + 1) begin
+        frame[DATA_WIDTH - 1 - CONTROL_WIDTH*i -: CONTROL_WIDTH] = i_frame[CONTROL_WIDTH * (i+1)- 1 -: CONTROL_WIDTH]                                                                                                                                                                               ;
+    end
+
+    o_frame = frame                                                                                                                                                                                                                                                                                 ;
+endtask
+
 
 task automatic invert_257_frame(
     output logic [TRANSCODER_WIDTH - 1 : 0] o_frame, /* Output frame 0  */
@@ -520,19 +535,19 @@ always_ff @(posedge clk or negedge i_rst_n)
                 case(counter)
                 2'b00: begin
                     // Set the input as data
-                    mii_txd_0 <= i_txd                                                                                                                                                                                                                                                              ;
+                    revert_64_frame(mii_txd_0, i_txd)                                                                                                                                                                                                                                               ;
                     mii_txc_0 <= i_txc                                                                                                                                                                                                                                                              ;
                 end                                                                                                                                                                                                                                                                 
                 2'b01: begin                                                                                                                                                                                                                                                                   
-                    mii_txd_1 <= i_txd                                                                                                                                                                                                                                                              ;
+                    revert_64_frame(mii_txc_1, i_txd)                                                                                                                                                                                                                                               ;
                     mii_txc_1 <= i_txc                                                                                                                                                                                                                                                              ;
                 end                                                                                                                                                                                                                                                                 
                 2'b10: begin                                                                                                                                                                                                                                                                   
-                    mii_txd_2 <= i_txd                                                                                                                                                                                                                                                              ;
+                    revert_64_frame(mii_txd_2, i_txd)                                                                                                                                                                                                                                               ;
                     mii_txc_2 <= i_txc                                                                                                                                                                                                                                                              ;
                 end                                                                                                                                                                                                                                                                 
                 2'b11: begin                                                                                                                                                                                                                                                                   
-                    mii_txd_3 <= i_txd                                                                                                                                                                                                                                                              ;
+                    revert_64_frame(mii_txd_3, i_txd)                                                                                                                                                                                                                                               ;
                     mii_txc_3 <= i_txc                                                                                                                                                                                                                                                              ;
                 end                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
                 endcase
