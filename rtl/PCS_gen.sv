@@ -308,10 +308,54 @@ task automatic invert_257_frame(
         frame[2] = i_frame[TRANSCODER_WIDTH - 3]                                                                                                                                                                                                                                                    ;
         frame[3] = i_frame[TRANSCODER_WIDTH - 4]                                                                                                                                                                                                                                                    ;
         frame[4] = i_frame[TRANSCODER_WIDTH - 5]                                                                                                                                                                                                                                                    ;
-        frame[CONTROL_WIDTH -: TRANSCODER_BLOCKS] = i_frame[TRANSCODER_WIDTH - 2 - TRANSCODER_BLOCKS -: TRANSCODER_BLOCKS]                                                                                                                                                                          ;
-        for(int i = 1; i < 32; i = i + 1'b1) begin
-            frame[CONTROL_WIDTH * (i+1) -: CONTROL_WIDTH] = i_frame[TRANSCODER_WIDTH - 2 - CONTROL_WIDTH*i -: CONTROL_WIDTH]                                                                                                                                                                        ;
+        if(frame[1] == 1'b1) begin
+            if(frame[2] == 1'b1) begin
+                if(frame[3] == 1'b1) begin
+
+                    for(int i = 0; i < 24; i = i + 1'b1) begin
+                        frame[CONTROL_WIDTH * (i+1) + TRANSCODER_BLOCKS -: CONTROL_WIDTH] = i_frame[TRANSCODER_WIDTH - 1 - CONTROL_WIDTH*i - TRANSCODER_BLOCKS -: CONTROL_WIDTH]                                                                                                                    ;
+                    end
+    
+                    frame[DATA_WIDTH * 3 + CONTROL_WIDTH -: TRANSCODER_BLOCKS] = i_frame[TRANSCODER_WIDTH - 2 - TRANSCODER_BLOCKS - DATA_WIDTH * 3 -: TRANSCODER_BLOCKS]                                                                                                                            ;
+                    
+                    for(int i = 25; i < 32; i = i + 1'b1) begin
+                        frame[CONTROL_WIDTH * (i+1) - : CONTROL_WIDTH] = i_frame[TRANSCODER_WIDTH - 1 - CONTROL_WIDTH*i -: CONTROL_WIDTH]                                                                                                                                                            ;
+                    end
+
+                end
+                else begin
+                    for(int i = 0; i < 16; i = i + 1'b1) begin
+                        frame[CONTROL_WIDTH * (i+1) + TRANSCODER_BLOCKS -: CONTROL_WIDTH] = i_frame[TRANSCODER_WIDTH - 1 - CONTROL_WIDTH*i - TRANSCODER_BLOCKS -: CONTROL_WIDTH]                                                                                                                    ;
+                    end
+    
+                    frame[DATA_WIDTH * 2 + CONTROL_WIDTH -: TRANSCODER_BLOCKS] = i_frame[TRANSCODER_WIDTH - 2 - TRANSCODER_BLOCKS - DATA_WIDTH * 2 -: TRANSCODER_BLOCKS]                                                                                                                            ;
+                    
+                    for(int i = 17; i < 32; i = i + 1'b1) begin
+                        frame[CONTROL_WIDTH * (i+1) -: CONTROL_WIDTH] = i_frame[TRANSCODER_WIDTH - 1 - CONTROL_WIDTH*i -: CONTROL_WIDTH]                                                                                                                                                            ;
+                    end                                                                                                                                                                                 
+                end
+
+            end
+            else begin
+                for(int i = 0; i < 8; i = i + 1'b1) begin
+                    frame[CONTROL_WIDTH * (i+1) + TRANSCODER_BLOCKS -: CONTROL_WIDTH] = i_frame[TRANSCODER_WIDTH - 1 - CONTROL_WIDTH*i - TRANSCODER_BLOCKS -: CONTROL_WIDTH]                                                                                                                        ;
+                end
+
+                frame[DATA_WIDTH + CONTROL_WIDTH -: TRANSCODER_BLOCKS] = i_frame[TRANSCODER_WIDTH - 2 - TRANSCODER_BLOCKS - DATA_WIDTH -: TRANSCODER_BLOCKS]                                                                                                                                        ;
+                
+                for(int i = 9; i < 32; i = i + 1'b1) begin
+                    frame[CONTROL_WIDTH * (i+1) -: CONTROL_WIDTH] = i_frame[TRANSCODER_WIDTH - 1 - CONTROL_WIDTH*i -: CONTROL_WIDTH]                                                                                                                                                                ;
+                end
+            end
         end
+        else begin
+            frame[CONTROL_WIDTH -: TRANSCODER_BLOCKS] = i_frame[TRANSCODER_WIDTH - 2 - TRANSCODER_BLOCKS -: TRANSCODER_BLOCKS]                                                                                                                                                                      ;
+            for(int i = 1; i < 32; i = i + 1'b1) begin
+                frame[CONTROL_WIDTH * (i+1) -: CONTROL_WIDTH] = i_frame[TRANSCODER_WIDTH - 1 - CONTROL_WIDTH*i -: CONTROL_WIDTH]                                                                                                                                                                    ;
+            end
+        end    
+        
+        
     end
 
     o_frame = frame                                                                                                                                                                                                                                                                                 ;
@@ -542,14 +586,14 @@ always_ff @(posedge clk or negedge i_rst_n)
                 end              
                 else begin    
                     // Select data or control byte for each output           
-                    mii_txd_0 <= (i_data_sel_0[0] == 1) ? FIXED_PATTERN_0_DATA : FIXED_PATTERN_0_CTRL                                                                                                                                                                                               ;                             
-                    mii_txc_0 <= (i_data_sel_0[0] == 1) ? TXC_TYPE_DATA        : TXC_TYPE_FIELD_0                                                                                                                                                                                                   ;                            
-                    mii_txd_1 <= (i_data_sel_0[1] == 1) ? FIXED_PATTERN_1_DATA : FIXED_PATTERN_1_CTRL                                                                                                                                                                                               ;
-                    mii_txc_1 <= (i_data_sel_0[1] == 1) ? TXC_TYPE_DATA        : TXC_TYPE_FIELD_1                                                                                                                                                                                                   ;                             
-                    mii_txd_2 <= (i_data_sel_0[2] == 1) ? FIXED_PATTERN_2_DATA : FIXED_PATTERN_2_CTRL                                                                                                                                                                                               ;
-                    mii_txc_2 <= (i_data_sel_0[2] == 1) ? TXC_TYPE_DATA        : TXC_TYPE_FIELD_2                                                                                                                                                                                                   ;                             
-                    mii_txd_3 <= (i_data_sel_0[3] == 1) ? FIXED_PATTERN_3_DATA : FIXED_PATTERN_3_CTRL                                                                                                                                                                                               ;
-                    mii_txc_3 <= (i_data_sel_0[3] == 1) ? TXC_TYPE_DATA        : TXC_TYPE_FIELD_3                                                                                                                                                                                                   ; 
+                    mii_txd_0 <= (i_data_sel_0[0] == 1'b1) ? FIXED_PATTERN_0_DATA : FIXED_PATTERN_0_CTRL                                                                                                                                                                                               ;                             
+                    mii_txc_0 <= (i_data_sel_0[0] == 1'b1) ? TXC_TYPE_DATA        : TXC_TYPE_FIELD_0                                                                                                                                                                                                   ;                            
+                    mii_txd_1 <= (i_data_sel_0[1] == 1'b1) ? FIXED_PATTERN_1_DATA : FIXED_PATTERN_1_CTRL                                                                                                                                                                                               ;
+                    mii_txc_1 <= (i_data_sel_0[1] == 1'b1) ? TXC_TYPE_DATA        : TXC_TYPE_FIELD_1                                                                                                                                                                                                   ;                             
+                    mii_txd_2 <= (i_data_sel_0[2] == 1'b1) ? FIXED_PATTERN_2_DATA : FIXED_PATTERN_2_CTRL                                                                                                                                                                                               ;
+                    mii_txc_2 <= (i_data_sel_0[2] == 1'b1) ? TXC_TYPE_DATA        : TXC_TYPE_FIELD_2                                                                                                                                                                                                   ;                             
+                    mii_txd_3 <= (i_data_sel_0[3] == 1'b1) ? FIXED_PATTERN_3_DATA : FIXED_PATTERN_3_CTRL                                                                                                                                                                                               ;
+                    mii_txc_3 <= (i_data_sel_0[3] == 1'b1) ? TXC_TYPE_DATA        : TXC_TYPE_FIELD_3                                                                                                                                                                                                   ; 
                 end             
                 counter <= 2'b00                                                                                                                                                                                                                                                                    ;                                                    
             end
