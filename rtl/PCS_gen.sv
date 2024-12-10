@@ -308,50 +308,50 @@ task automatic invert_257_frame(
         frame[2] = i_frame[TRANSCODER_WIDTH - 3]                                                                                                                                                                                                                                                    ;
         frame[3] = i_frame[TRANSCODER_WIDTH - 4]                                                                                                                                                                                                                                                    ;
         frame[4] = i_frame[TRANSCODER_WIDTH - 5]                                                                                                                                                                                                                                                    ;
-        if(frame[1] == 1'b1) begin
-            if(frame[2] == 1'b1) begin
-                if(frame[3] == 1'b1) begin
+        if(i_frame[TRANSCODER_WIDTH - 2]) begin
+            if(i_frame[TRANSCODER_WIDTH - 3]) begin
+                if(i_frame[TRANSCODER_WIDTH - 4]) begin
 
                     for(int i = 0; i < 24; i = i + 1'b1) begin
-                        frame[CONTROL_WIDTH * (i+1) + TRANSCODER_BLOCKS -: CONTROL_WIDTH] = i_frame[TRANSCODER_WIDTH - 1 - CONTROL_WIDTH*i - TRANSCODER_BLOCKS -: CONTROL_WIDTH]                                                                                                                    ;
+                        frame[CONTROL_WIDTH * (i+1) + TRANSCODER_BLOCKS -: CONTROL_WIDTH] = i_frame[TRANSCODER_WIDTH - 2 - CONTROL_WIDTH*i - TRANSCODER_BLOCKS -: CONTROL_WIDTH]                                                                                                                    ;
                     end
     
                     frame[DATA_WIDTH * 3 + CONTROL_WIDTH -: TRANSCODER_BLOCKS] = i_frame[TRANSCODER_WIDTH - 2 - TRANSCODER_BLOCKS - DATA_WIDTH * 3 -: TRANSCODER_BLOCKS]                                                                                                                            ;
                     
                     for(int i = 25; i < 32; i = i + 1'b1) begin
-                        frame[CONTROL_WIDTH * (i+1) - : CONTROL_WIDTH] = i_frame[TRANSCODER_WIDTH - 1 - CONTROL_WIDTH*i -: CONTROL_WIDTH]                                                                                                                                                            ;
+                        frame[CONTROL_WIDTH * (i+1) - : CONTROL_WIDTH] = i_frame[TRANSCODER_WIDTH - 2 - CONTROL_WIDTH*i -: CONTROL_WIDTH]                                                                                                                                                            ;
                     end
 
                 end
                 else begin
                     for(int i = 0; i < 16; i = i + 1'b1) begin
-                        frame[CONTROL_WIDTH * (i+1) + TRANSCODER_BLOCKS -: CONTROL_WIDTH] = i_frame[TRANSCODER_WIDTH - 1 - CONTROL_WIDTH*i - TRANSCODER_BLOCKS -: CONTROL_WIDTH]                                                                                                                    ;
+                        frame[CONTROL_WIDTH * (i+1) + TRANSCODER_BLOCKS -: CONTROL_WIDTH] = i_frame[TRANSCODER_WIDTH - 2 - CONTROL_WIDTH*i - TRANSCODER_BLOCKS -: CONTROL_WIDTH]                                                                                                                    ;
                     end
     
                     frame[DATA_WIDTH * 2 + CONTROL_WIDTH -: TRANSCODER_BLOCKS] = i_frame[TRANSCODER_WIDTH - 2 - TRANSCODER_BLOCKS - DATA_WIDTH * 2 -: TRANSCODER_BLOCKS]                                                                                                                            ;
                     
                     for(int i = 17; i < 32; i = i + 1'b1) begin
-                        frame[CONTROL_WIDTH * (i+1) -: CONTROL_WIDTH] = i_frame[TRANSCODER_WIDTH - 1 - CONTROL_WIDTH*i -: CONTROL_WIDTH]                                                                                                                                                            ;
+                        frame[CONTROL_WIDTH * (i+1) -: CONTROL_WIDTH] = i_frame[TRANSCODER_WIDTH - 2 - CONTROL_WIDTH*i -: CONTROL_WIDTH]                                                                                                                                                            ;
                     end                                                                                                                                                                                 
                 end
 
             end
             else begin
                 for(int i = 0; i < 8; i = i + 1'b1) begin
-                    frame[CONTROL_WIDTH * (i+1) + TRANSCODER_BLOCKS -: CONTROL_WIDTH] = i_frame[TRANSCODER_WIDTH - 1 - CONTROL_WIDTH*i - TRANSCODER_BLOCKS -: CONTROL_WIDTH]                                                                                                                        ;
+                    frame[CONTROL_WIDTH * (i+1) + TRANSCODER_BLOCKS -: CONTROL_WIDTH] = i_frame[TRANSCODER_WIDTH - 2 - CONTROL_WIDTH*i - TRANSCODER_BLOCKS -: CONTROL_WIDTH]                                                                                                                        ;
                 end
 
                 frame[DATA_WIDTH + CONTROL_WIDTH -: TRANSCODER_BLOCKS] = i_frame[TRANSCODER_WIDTH - 2 - TRANSCODER_BLOCKS - DATA_WIDTH -: TRANSCODER_BLOCKS]                                                                                                                                        ;
                 
                 for(int i = 9; i < 32; i = i + 1'b1) begin
-                    frame[CONTROL_WIDTH * (i+1) -: CONTROL_WIDTH] = i_frame[TRANSCODER_WIDTH - 1 - CONTROL_WIDTH*i -: CONTROL_WIDTH]                                                                                                                                                                ;
+                    frame[CONTROL_WIDTH * (i+1) -: CONTROL_WIDTH] = i_frame[TRANSCODER_WIDTH - 2 - CONTROL_WIDTH*i -: CONTROL_WIDTH]                                                                                                                                                                ;
                 end
             end
         end
         else begin
             frame[CONTROL_WIDTH -: TRANSCODER_BLOCKS] = i_frame[TRANSCODER_WIDTH - 2 - TRANSCODER_BLOCKS -: TRANSCODER_BLOCKS]                                                                                                                                                                      ;
             for(int i = 1; i < 32; i = i + 1'b1) begin
-                frame[CONTROL_WIDTH * (i+1) -: CONTROL_WIDTH] = i_frame[TRANSCODER_WIDTH - 1 - CONTROL_WIDTH*i -: CONTROL_WIDTH]                                                                                                                                                                    ;
+                frame[CONTROL_WIDTH * (i+1) -: CONTROL_WIDTH] = i_frame[TRANSCODER_WIDTH - 2 - CONTROL_WIDTH*i -: CONTROL_WIDTH]                                                                                                                                                                    ;
             end
         end    
         
