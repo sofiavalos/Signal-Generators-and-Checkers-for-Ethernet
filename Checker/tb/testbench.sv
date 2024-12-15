@@ -157,7 +157,7 @@ module aui_testbench;
     // Simulation control
     initial begin
         // Run the simulation for a specific time
-        #40000;
+        #100000;
         $finish;
     end
 

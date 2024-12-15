@@ -69,6 +69,8 @@ module aui_checker #(
     
     logic [15:0] sync_flags;
     logic [15:0] pattern_checks;
+    logic [119:0] reversed_am [0:15]; // Para almacenar los valores invertidos de extracted_am
+    logic [119:0] last_am [0:15]; // Para almacenar los valores de extracted_am de la iteración anterior
     
     always_comb begin
         // Almacenar cada lane completo
@@ -90,30 +92,43 @@ module aui_checker #(
         stored_lanes[15] = i_lane_15;
         
         // Cargar los valores solo si el sync_lane correspondiente está activo
-        if (sync_lane_0)  extracted_am[0]  <= stored_lanes[0][119:0];
-        if (sync_lane_1)  extracted_am[1]  <= stored_lanes[1][119:0];
-        if (sync_lane_2)  extracted_am[2]  <= stored_lanes[2][119:0];
-        if (sync_lane_3)  extracted_am[3]  <= stored_lanes[3][119:0];
-        if (sync_lane_4)  extracted_am[4]  <= stored_lanes[4][119:0];
-        if (sync_lane_5)  extracted_am[5]  <= stored_lanes[5][119:0];
-        if (sync_lane_6)  extracted_am[6]  <= stored_lanes[6][119:0];
-        if (sync_lane_7)  extracted_am[7]  <= stored_lanes[7][119:0];
-        if (sync_lane_8)  extracted_am[8]  <= stored_lanes[8][119:0];
-        if (sync_lane_9)  extracted_am[9]  <= stored_lanes[9][119:0];
-        if (sync_lane_10) extracted_am[10] <= stored_lanes[10][119:0];
-        if (sync_lane_11) extracted_am[11] <= stored_lanes[11][119:0];
-        if (sync_lane_12) extracted_am[12] <= stored_lanes[12][119:0];
-        if (sync_lane_13) extracted_am[13] <= stored_lanes[13][119:0];
-        if (sync_lane_14) extracted_am[14] <= stored_lanes[14][119:0];
-        if (sync_lane_15) extracted_am[15] <= stored_lanes[15][119:0];
+        // Extraer los últimos 120 bits de cada lane si el sync_lane correspondiente está en 1
+        extracted_am[0]  = sync_lane_0  ? stored_lanes[0][119:0]  : 120'd0;
+        extracted_am[1]  = sync_lane_1  ? stored_lanes[1][119:0]  : 120'd0;
+        extracted_am[2]  = sync_lane_2  ? stored_lanes[2][119:0]  : 120'd0;
+        extracted_am[3]  = sync_lane_3  ? stored_lanes[3][119:0]  : 120'd0;
+        extracted_am[4]  = sync_lane_4  ? stored_lanes[4][119:0]  : 120'd0;
+        extracted_am[5]  = sync_lane_5  ? stored_lanes[5][119:0]  : 120'd0;
+        extracted_am[6]  = sync_lane_6  ? stored_lanes[6][119:0]  : 120'd0;
+        extracted_am[7]  = sync_lane_7  ? stored_lanes[7][119:0]  : 120'd0;
+        extracted_am[8]  = sync_lane_8  ? stored_lanes[8][119:0]  : 120'd0;
+        extracted_am[9]  = sync_lane_9  ? stored_lanes[9][119:0]  : 120'd0;
+        extracted_am[10] = sync_lane_10 ? stored_lanes[10][119:0] : 120'd0;
+        extracted_am[11] = sync_lane_11 ? stored_lanes[11][119:0] : 120'd0;
+        extracted_am[12] = sync_lane_12 ? stored_lanes[12][119:0] : 120'd0;
+        extracted_am[13] = sync_lane_13 ? stored_lanes[13][119:0] : 120'd0;
+        extracted_am[14] = sync_lane_14 ? stored_lanes[14][119:0] : 120'd0;
+        extracted_am[15] = sync_lane_15 ? stored_lanes[15][119:0] : 120'd0;
 
-        // Comparar los AM extraídos con los esperados
         for (int i = 0; i < 16; i++) begin
-            pattern_checks[i] = (extracted_am[i] == expected_am[i]);
+            // Procesar cada octeto (8 bits) y reordenarlos
+            for (int j = 0; j < 15; j++) begin
+                reversed_am[i][(j+1)*8-1 -: 8] = extracted_am[i][(15-j)*8-1 -: 8];
+            end
         end
 
-        // Validar los patrones
-        valid_pattern = &pattern_checks;
+        // Comparar los valores invertidos con los esperados
+        for (int i = 0; i < 16; i++) begin
+            if (reversed_am[i] == expected_am[i]) begin
+                sync_flags[i] = 1;
+            end else begin
+                sync_flags[i] = 0;
+            end
+        end
+
+        // guardar los AM para comparar con la proxima vez
+        last_am = reversed_am;
     end
+
 
 endmodule
