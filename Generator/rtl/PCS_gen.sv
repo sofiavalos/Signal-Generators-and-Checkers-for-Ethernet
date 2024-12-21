@@ -408,7 +408,8 @@ task automatic mii_to_pcs(
     if(i_txc != TXC_TYPE_DATA) begin
         // Compare control byte with PCS control bytes and generate frame
         frame =     (i_txc == TXC_TYPE_FIELD_0 && 
-                    i_txd[DATA_WIDTH - 0*CONTROL_WIDTH -1 -: CONTROL_WIDTH] != MII_TERM) ? {CTRL_SYNC, BLOCK_TYPE_FIELD_0, 
+                    i_txd[DATA_WIDTH - 0*CONTROL_WIDTH -1 -: CONTROL_WIDTH] != MII_TERM &&
+                    i_txd[DATA_WIDTH - 0*CONTROL_WIDTH -1 -: CONTROL_WIDTH] != MII_ERROR)? {CTRL_SYNC, BLOCK_TYPE_FIELD_0, 
                         pcs_data[DATA_WIDTH - 0*CONTROL_WIDTH - 2 -: CONTROL_WIDTH - 1], 
                         pcs_data[DATA_WIDTH - 1*CONTROL_WIDTH - 2 -: CONTROL_WIDTH - 1], 
                         pcs_data[DATA_WIDTH - 2*CONTROL_WIDTH - 2 -: CONTROL_WIDTH - 1],
