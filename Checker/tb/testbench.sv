@@ -4,6 +4,7 @@ module aui_testbench;
     parameter NUMBER_LANES = 16;
     parameter BITS_BLOCK = 257;
     parameter LANE_WIDTH = 1360;
+    parameter CODEWORD_WIDTH = 5440;
 
     // Signals
     logic clk;
