@@ -169,8 +169,8 @@ module aui_generator #(
         //Status field
         assign am_mapped_f1[1027:1025] = 3'b111;
 
-        assign tx_scrambled_f0[(MAX_BLOCKS_AM*BITS_BLOCK)-1:0] = {{9252{1'd1}}, am_mapped_f0[1027:0]}; //am + data blocks
-        assign tx_scrambled_f1[(MAX_BLOCKS_AM*BITS_BLOCK)-1:0] = {{9252{1'd0}}, am_mapped_f1[1027:0]};
+        assign tx_scrambled_f0[(MAX_BLOCKS_AM*BITS_BLOCK)-1:0] = {{9252 / 8{8'h30}}, am_mapped_f0[1027:0]}; //am + data blocks
+        assign tx_scrambled_f1[(MAX_BLOCKS_AM*BITS_BLOCK)-1:0] = {{9252 / 8{8'h06}}, am_mapped_f1[1027:0]};
         
         for(l = 0; l < 544; l++) begin //5439         5430
             assign message_codeword_a[((544-l)*10)-1:((544-l)*10)-10] = tx_scrambled_f0[(20*l+9):(20*l)];

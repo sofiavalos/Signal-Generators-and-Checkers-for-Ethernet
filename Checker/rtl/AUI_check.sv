@@ -96,6 +96,17 @@ module aui_checker #(
         AM_LANE_14 = 4'hE,
         AM_LANE_15 = 4'hF;
 
+    localparam [BLOCK_WO_AM_WIDTH - 1 : 0]
+        EXPECTED_BLOCK_0 = {BLOCK_WO_AM_WIDTH / BYTE_SIZE{8'h75}},
+        EXPECTED_BLOCK_1 = {BLOCK_WO_AM_WIDTH / BYTE_SIZE{8'h90}},
+        EXPECTED_BLOCK_2 = {BLOCK_WO_AM_WIDTH / BYTE_SIZE{8'h05}},
+        EXPECTED_BLOCK_3 = {BLOCK_WO_AM_WIDTH / BYTE_SIZE{8'hFF}},
+        EXPECTED_BLOCK_4 = {BLOCK_WO_AM_WIDTH / BYTE_SIZE{8'hF0}},
+        EXPECTED_BLOCK_5 = {BLOCK_WO_AM_WIDTH / BYTE_SIZE{8'hAA}},
+        EXPECTED_BLOCK_6 = {BLOCK_WO_AM_WIDTH / BYTE_SIZE{8'h30}},
+        EXPECTED_BLOCK_7 = {BLOCK_WO_AM_WIDTH / BYTE_SIZE{8'h06}},
+        EXPECTED_BLOCK_8 = {BLOCK_WO_AM_WIDTH / BYTE_SIZE{8'h99}};
+
     // Alignment markers esperados segun estandar
     logic [AM_WIDTH              - 1 : 0] expected_am     [0 : AM_LANES - 1];    // 16 vias de 120 bits cada una
     logic [LANE_WIDTH            - 1 : 0] stored_lanes    [0 : AM_LANES - 1];    // Registros para almacenar cada lane
@@ -220,22 +231,31 @@ module aui_checker #(
         // guardar los AM para comparar con la proxima vez
         last_am = reversed_am;
 
-        // mux 10 bits para Round Robin
-        for(int i = 0; i < TOTAL_ITERATIONS; i = i + 1'b1) begin
-            for(int j = 0; j < AM_LANES; j = j + 1'b1) begin
-                for(int k = 0; k < TOTAL_CODEWORDS; k = k + 1'b1) begin
-                    case(k % 4)
-                        2'h0: codeword_a[((CODEWORD_WIDTH / ROUND_ROBIN_BITS - (AM_LANES * i)) - j) * ROUND_ROBIN_BITS - 1 -: ROUND_ROBIN_BITS] =
-                                stored_lanes[j][(TOTAL_CODEWORDS * i + (k+1)) * ROUND_ROBIN_BITS - 1 -: ROUND_ROBIN_BITS];
-                        2'h1: codeword_b[((CODEWORD_WIDTH / ROUND_ROBIN_BITS - (AM_LANES * i)) - j) * ROUND_ROBIN_BITS - 1 -: ROUND_ROBIN_BITS] =
-                                stored_lanes[j][(TOTAL_CODEWORDS * i + (k+1)) * ROUND_ROBIN_BITS - 1 -: ROUND_ROBIN_BITS];
-                        2'h2: codeword_c[((CODEWORD_WIDTH / ROUND_ROBIN_BITS - (AM_LANES * i)) - j) * ROUND_ROBIN_BITS - 1 -: ROUND_ROBIN_BITS] =
-                                stored_lanes[j][(TOTAL_CODEWORDS * i + (k+1)) * ROUND_ROBIN_BITS - 1 -: ROUND_ROBIN_BITS];
-                        2'h3: codeword_d[((CODEWORD_WIDTH / ROUND_ROBIN_BITS - (AM_LANES * i)) - j) * ROUND_ROBIN_BITS - 1 -: ROUND_ROBIN_BITS] =
-                                stored_lanes[j][(TOTAL_CODEWORDS * i + (k+1)) * ROUND_ROBIN_BITS - 1 -: ROUND_ROBIN_BITS];
-                    endcase
+        if(sync_lanes == 16'hFFFF) begin
+            // mux 10 bits para Round Robin
+            for(int i = 0; i < TOTAL_ITERATIONS; i = i + 1'b1) begin
+                for(int j = 0; j < AM_LANES; j = j + 1'b1) begin
+                    for(int k = 0; k < TOTAL_CODEWORDS; k = k + 1'b1) begin
+                        case(k % 4)
+                            2'h0: codeword_a[((CODEWORD_WIDTH / ROUND_ROBIN_BITS - (AM_LANES * i)) - j) * ROUND_ROBIN_BITS - 1 -: ROUND_ROBIN_BITS] =
+                                    stored_lanes[j][(TOTAL_CODEWORDS * i + (k+1)) * ROUND_ROBIN_BITS - 1 -: ROUND_ROBIN_BITS];
+                            2'h1: codeword_b[((CODEWORD_WIDTH / ROUND_ROBIN_BITS - (AM_LANES * i)) - j) * ROUND_ROBIN_BITS - 1 -: ROUND_ROBIN_BITS] =
+                                    stored_lanes[j][(TOTAL_CODEWORDS * i + (k+1)) * ROUND_ROBIN_BITS - 1 -: ROUND_ROBIN_BITS];
+                            2'h2: codeword_c[((CODEWORD_WIDTH / ROUND_ROBIN_BITS - (AM_LANES * i)) - j) * ROUND_ROBIN_BITS - 1 -: ROUND_ROBIN_BITS] =
+                                    stored_lanes[j][(TOTAL_CODEWORDS * i + (k+1)) * ROUND_ROBIN_BITS - 1 -: ROUND_ROBIN_BITS];
+                            2'h3: codeword_d[((CODEWORD_WIDTH / ROUND_ROBIN_BITS - (AM_LANES * i)) - j) * ROUND_ROBIN_BITS - 1 -: ROUND_ROBIN_BITS] =
+                                    stored_lanes[j][(TOTAL_CODEWORDS * i + (k+1)) * ROUND_ROBIN_BITS - 1 -: ROUND_ROBIN_BITS];
+                        endcase
+                    end
                 end
             end
+
+        end
+        else begin
+            codeword_a = codeword_a;
+            codeword_b = codeword_b;
+            codeword_c = codeword_c;
+            codeword_d = codeword_d;
         end
 
         // Extrae las codewords sin FEC
