@@ -60,8 +60,28 @@ module aui_checker #(
     localparam AM_MAPPED_WIDTH = 1028;
     localparam BLOCK_WO_AM_WIDTH = BLOCK_W_AM_WIDTH - AM_MAPPED_WIDTH;
 
+
+    // AMs ya invertidos para comparar directamente con los que ingresan
     localparam [AM_WIDTH - 1 : 0]
-        EXPECTED_AM_LANE_0  = 120'h9A4A26B665B5D9D9FE8E0C260171F3,
+        EXPECTED_AM_LANE_0  = 120'hF37101260C8EFED9D9B565B6264A9A,
+        EXPECTED_AM_LANE_1  = 120'h7EDE5A988121A567D9B56504264A9A,
+        EXPECTED_AM_LANE_2  = 120'h56F33E01A90CC1FED9B56546264A9A,
+        EXPECTED_AM_LANE_3  = 120'hD080867B2F7F7984D9B5655A264A9A,
+        EXPECTED_AM_LANE_4  = 120'hF2512AE60DAED519D9B565E1264A9A,
+        EXPECTED_AM_LANE_5  = 120'hD14F12B12EB0ED4ED9B565F2264A9A,
+        EXPECTED_AM_LANE_6  = 120'hA19C42115E63BDEED9B5653D264A9A,
+        EXPECTED_AM_LANE_7  = 120'h5B76D6CDA4892932D9B56522264A9A,
+        EXPECTED_AM_LANE_8  = 120'h7573E1608A8C1E9FD9B56560264A9A,
+        EXPECTED_AM_LANE_9  = 120'h3CC4715DC33B8EA2D9B5656B264A9A,
+        EXPECTED_AM_LANE_10 = 120'hD8EB95FB27146A04D9B565FA264A9A,
+        EXPECTED_AM_LANE_11 = 120'h3866228EC799DD71D9B5656C264A9A,
+        EXPECTED_AM_LANE_12 = 120'h95F6A2A46A095D5BD9B56518264A9A,
+        EXPECTED_AM_LANE_13 = 120'hC39731333C68CECCD9B56514264A9A,
+        EXPECTED_AM_LANE_14 = 120'hA6FBCA4E590435B1D9B565D0264A9A,
+        EXPECTED_AM_LANE_15 = 120'h79BAA6A986455956D9B565B4264A9A;
+
+        
+        /*EXPECTED_AM_LANE_0  = 120'h9A4A26B665B5D9D9FE8E0C260171F3,
         EXPECTED_AM_LANE_1  = 120'h9A4A260465b5d967a52181985ade7e,
         EXPECTED_AM_LANE_2  = 120'h9a4a264665b5d9fec10ca9013ef356,
         EXPECTED_AM_LANE_3  = 120'h9a4a265a65b5d984797f2f7b8680d0,
@@ -76,7 +96,7 @@ module aui_checker #(
         EXPECTED_AM_LANE_12 = 120'h9a4a261865b5d95b5d096aa4a2f695,
         EXPECTED_AM_LANE_13 = 120'h9a4a261465b5d9ccce683c333197c3,
         EXPECTED_AM_LANE_14 = 120'h9a4a26d065b5d9b13504594ecafba6,
-        EXPECTED_AM_LANE_15 = 120'h9a4a26b465b5d956594586a9a6ba79;
+        EXPECTED_AM_LANE_15 = 120'h9a4a26b465b5d956594586a9a6ba79;*/
 
     localparam [AM_LANES_WIDTH : 0]
         AM_LANE_0  = 4'h0,
@@ -96,25 +116,15 @@ module aui_checker #(
         AM_LANE_14 = 4'hE,
         AM_LANE_15 = 4'hF;
 
-    localparam [BLOCK_WO_AM_WIDTH - 1 : 0]
-        EXPECTED_BLOCK_0 = {BLOCK_WO_AM_WIDTH / BYTE_SIZE{8'h75}},
-        EXPECTED_BLOCK_1 = {BLOCK_WO_AM_WIDTH / BYTE_SIZE{8'h90}},
-        EXPECTED_BLOCK_2 = {BLOCK_WO_AM_WIDTH / BYTE_SIZE{8'h05}},
-        EXPECTED_BLOCK_3 = {BLOCK_WO_AM_WIDTH / BYTE_SIZE{8'hFF}},
-        EXPECTED_BLOCK_4 = {BLOCK_WO_AM_WIDTH / BYTE_SIZE{8'hF0}},
-        EXPECTED_BLOCK_5 = {BLOCK_WO_AM_WIDTH / BYTE_SIZE{8'hAA}},
-        EXPECTED_BLOCK_6 = {BLOCK_WO_AM_WIDTH / BYTE_SIZE{8'h30}},
-        EXPECTED_BLOCK_7 = {BLOCK_WO_AM_WIDTH / BYTE_SIZE{8'h06}},
-        EXPECTED_BLOCK_8 = {BLOCK_WO_AM_WIDTH / BYTE_SIZE{8'h99}};
-
     // Alignment markers esperados segun estandar
     logic [AM_WIDTH              - 1 : 0] expected_am     [0 : AM_LANES - 1];    // 16 vias de 120 bits cada una
     logic [LANE_WIDTH            - 1 : 0] stored_lanes    [0 : AM_LANES - 1];    // Registros para almacenar cada lane
     logic [AM_WIDTH              - 1 : 0] extracted_am    [0 : AM_LANES - 1];    // Registros para los primeros 120 bits de cada lane
-    logic [AM_WIDTH              - 1 : 0] reversed_am     [0 : AM_LANES - 1]; // Para almacenar los valores invertidos de extracted_am
+                //logic [AM_WIDTH              - 1 : 0] reversed_am     [0 : AM_LANES - 1]; // Para almacenar los valores invertidos de extracted_am
     logic [AM_WIDTH              - 1 : 0] last_am         [0 : AM_LANES - 1]; // Para almacenar los valores de extracted_am de la iteración anterior
     logic [AM_LANES              - 1 : 0] sync_lanes; // Bandera de sincronización para cada lane
-    logic [LANE_WIDTH            - 1 : 0] sync_flags;
+    //logic [LANE_WIDTH            - 1 : 0] sync_flags;   
+    logic [AM_LANES            - 1 : 0] sync_flags;
     // Contadores de ciclos entre activaciones de sync_lane
     logic [TOTAL_CYCLES_WIDTH    - 1 : 0] cycle_counter   [0 : AM_LANES - 1];   // Contador actual de ciclos para cada lane
     logic [TOTAL_CYCLES_WIDTH    - 1 : 0] cycle_gap       [0 : AM_LANES - 1];       // Valor del gap calculado entre activaciones de cada lane
@@ -139,6 +149,11 @@ module aui_checker #(
     // AM mapped
     logic [AM_MAPPED_WIDTH       - 1 : 0] am_mapped_0;
     logic [AM_MAPPED_WIDTH       - 1 : 0] am_mapped_1;
+    
+    
+    logic [LANE_WIDTH-1:0] sorted_lanes [0:AM_LANES-1];
+    logic [3:0] lane_mapping [0:AM_LANES-1];
+    logic mapping_complete;
     
 
     assign expected_am[AM_LANE_0 ]  = EXPECTED_AM_LANE_0;
@@ -176,7 +191,7 @@ module aui_checker #(
     
     always_comb begin
         // Almacenar cada lane completo
-        stored_lanes[AM_LANE_0 ] = i_lane_0;
+        /*stored_lanes[AM_LANE_0 ] = i_lane_0;
         stored_lanes[AM_LANE_1 ] = i_lane_1;
         stored_lanes[AM_LANE_2 ] = i_lane_2;
         stored_lanes[AM_LANE_3 ] = i_lane_3;
@@ -191,7 +206,46 @@ module aui_checker #(
         stored_lanes[AM_LANE_12] = i_lane_12;
         stored_lanes[AM_LANE_13] = i_lane_13;
         stored_lanes[AM_LANE_14] = i_lane_14;
-        stored_lanes[AM_LANE_15] = i_lane_15;
+        stored_lanes[AM_LANE_15] = i_lane_15;*/
+        
+        // Verifico si han sido ordenados los lanes
+        if (!mapping_complete) begin
+            stored_lanes[AM_LANE_0 ] = i_lane_0;
+            stored_lanes[AM_LANE_1 ] = i_lane_1;
+            stored_lanes[AM_LANE_2 ] = i_lane_2;
+            stored_lanes[AM_LANE_3 ] = i_lane_3;
+            stored_lanes[AM_LANE_4 ] = i_lane_4;
+            stored_lanes[AM_LANE_5 ] = i_lane_5;
+            stored_lanes[AM_LANE_6 ] = i_lane_6;
+            stored_lanes[AM_LANE_7 ] = i_lane_7;
+            stored_lanes[AM_LANE_8 ] = i_lane_8;
+            stored_lanes[AM_LANE_9 ] = i_lane_9;
+            stored_lanes[AM_LANE_10] = i_lane_10;
+            stored_lanes[AM_LANE_11] = i_lane_11;
+            stored_lanes[AM_LANE_12] = i_lane_12;
+            stored_lanes[AM_LANE_13] = i_lane_13;
+            stored_lanes[AM_LANE_14] = i_lane_14;
+            stored_lanes[AM_LANE_15] = i_lane_15;
+        end 
+        // Si los lanes ya han sido ordenados, utilizo orden segun lane_mapping
+        else begin
+            stored_lanes[lane_mapping[0] ] = i_lane_0;
+            stored_lanes[lane_mapping[1] ] = i_lane_1;
+            stored_lanes[lane_mapping[2] ] = i_lane_2;
+            stored_lanes[lane_mapping[3] ] = i_lane_3;
+            stored_lanes[lane_mapping[4] ] = i_lane_4;
+            stored_lanes[lane_mapping[5] ] = i_lane_5;
+            stored_lanes[lane_mapping[6] ] = i_lane_6;
+            stored_lanes[lane_mapping[7] ] = i_lane_7;
+            stored_lanes[lane_mapping[8] ] = i_lane_8;
+            stored_lanes[lane_mapping[9] ] = i_lane_9;
+            stored_lanes[lane_mapping[10]] = i_lane_10;
+            stored_lanes[lane_mapping[11]] = i_lane_11;
+            stored_lanes[lane_mapping[12]] = i_lane_12;
+            stored_lanes[lane_mapping[13]] = i_lane_13;
+            stored_lanes[lane_mapping[14]] = i_lane_14;
+            stored_lanes[lane_mapping[15]] = i_lane_15;
+        end
         
         // Cargar los valores solo si el sync_lane correspondiente está activo
         // Extraer los últimos 120 bits de cada lane si el sync_lane correspondiente está en 1
@@ -212,16 +266,27 @@ module aui_checker #(
         extracted_am[AM_LANE_14] = sync_lane_14 ? stored_lanes[AM_LANE_14][AM_WIDTH - 1 : 0]  : {AM_WIDTH{1'b0}};
         extracted_am[AM_LANE_15] = sync_lane_15 ? stored_lanes[AM_LANE_15][AM_WIDTH - 1 : 0]  : {AM_WIDTH{1'b0}};
 
-        for (int i = 0; i < AM_LANES; i = i + 1'b1) begin
-            // Procesar cada octeto (8 bits) y reordenarlos
-            for (int j = 0; j < AM_LANES - 1; j = j + 1'b1) begin
-                reversed_am[i][(j+1)*BYTE_SIZE - 1 -: BYTE_SIZE] = extracted_am[i][(AM_LANES - 1 - j)*BYTE_SIZE - 1 -: BYTE_SIZE];
-            end
-        end
+            // No invierto los AM, los comparo con los expected en el localparam
 
-        // Comparar los valores invertidos con los esperados
+            /*for (int i = 0; i < AM_LANES; i = i + 1'b1) begin
+                // Procesar cada octeto (8 bits) y reordenarlos
+                for (int j = 0; j < AM_LANES - 1; j = j + 1'b1) begin
+                    reversed_am[i][(j+1)*BYTE_SIZE - 1 -: BYTE_SIZE] = extracted_am[i][(AM_LANES - 1 - j)*BYTE_SIZE - 1 -: BYTE_SIZE];
+                end
+            end*/
+
+            // Comparar los valores invertidos con los esperados
+            /*for (int i = 0; i < AM_LANES; i = i + 1'b1) begin
+                if(reversed_am[i] == expected_am[i]) begin
+                    sync_flags[i] = 1'b1;
+                end else begin
+                    sync_flags[i] = 1'b0;
+                end
+            end*/
+        
+        // Comparo AMs uno por uno, recibidos con los codificados
         for (int i = 0; i < AM_LANES; i = i + 1'b1) begin
-            if(reversed_am[i] == expected_am[i]) begin
+            if(extracted_am[i] == expected_am[i]) begin
                 sync_flags[i] = 1'b1;
             end else begin
                 sync_flags[i] = 1'b0;
@@ -229,33 +294,25 @@ module aui_checker #(
         end
         
         // guardar los AM para comparar con la proxima vez
-        last_am = reversed_am;
+        //last_am = reversed_am;
+        last_am = extracted_am;
 
-        if(sync_lanes == 16'hFFFF) begin
-            // mux 10 bits para Round Robin
-            for(int i = 0; i < TOTAL_ITERATIONS; i = i + 1'b1) begin
-                for(int j = 0; j < AM_LANES; j = j + 1'b1) begin
-                    for(int k = 0; k < TOTAL_CODEWORDS; k = k + 1'b1) begin
-                        case(k % 4)
-                            2'h0: codeword_a[((CODEWORD_WIDTH / ROUND_ROBIN_BITS - (AM_LANES * i)) - j) * ROUND_ROBIN_BITS - 1 -: ROUND_ROBIN_BITS] =
-                                    stored_lanes[j][(TOTAL_CODEWORDS * i + (k+1)) * ROUND_ROBIN_BITS - 1 -: ROUND_ROBIN_BITS];
-                            2'h1: codeword_b[((CODEWORD_WIDTH / ROUND_ROBIN_BITS - (AM_LANES * i)) - j) * ROUND_ROBIN_BITS - 1 -: ROUND_ROBIN_BITS] =
-                                    stored_lanes[j][(TOTAL_CODEWORDS * i + (k+1)) * ROUND_ROBIN_BITS - 1 -: ROUND_ROBIN_BITS];
-                            2'h2: codeword_c[((CODEWORD_WIDTH / ROUND_ROBIN_BITS - (AM_LANES * i)) - j) * ROUND_ROBIN_BITS - 1 -: ROUND_ROBIN_BITS] =
-                                    stored_lanes[j][(TOTAL_CODEWORDS * i + (k+1)) * ROUND_ROBIN_BITS - 1 -: ROUND_ROBIN_BITS];
-                            2'h3: codeword_d[((CODEWORD_WIDTH / ROUND_ROBIN_BITS - (AM_LANES * i)) - j) * ROUND_ROBIN_BITS - 1 -: ROUND_ROBIN_BITS] =
-                                    stored_lanes[j][(TOTAL_CODEWORDS * i + (k+1)) * ROUND_ROBIN_BITS - 1 -: ROUND_ROBIN_BITS];
-                        endcase
-                    end
+        // mux 10 bits para Round Robin
+        for(int i = 0; i < TOTAL_ITERATIONS; i = i + 1'b1) begin
+            for(int j = 0; j < AM_LANES; j = j + 1'b1) begin
+                for(int k = 0; k < TOTAL_CODEWORDS; k = k + 1'b1) begin
+                    case(k % 4)
+                        2'h0: codeword_a[((CODEWORD_WIDTH / ROUND_ROBIN_BITS - (AM_LANES * i)) - j) * ROUND_ROBIN_BITS - 1 -: ROUND_ROBIN_BITS] =
+                                stored_lanes[j][(TOTAL_CODEWORDS * i + (k+1)) * ROUND_ROBIN_BITS - 1 -: ROUND_ROBIN_BITS];
+                        2'h1: codeword_b[((CODEWORD_WIDTH / ROUND_ROBIN_BITS - (AM_LANES * i)) - j) * ROUND_ROBIN_BITS - 1 -: ROUND_ROBIN_BITS] =
+                                stored_lanes[j][(TOTAL_CODEWORDS * i + (k+1)) * ROUND_ROBIN_BITS - 1 -: ROUND_ROBIN_BITS];
+                        2'h2: codeword_c[((CODEWORD_WIDTH / ROUND_ROBIN_BITS - (AM_LANES * i)) - j) * ROUND_ROBIN_BITS - 1 -: ROUND_ROBIN_BITS] =
+                                stored_lanes[j][(TOTAL_CODEWORDS * i + (k+1)) * ROUND_ROBIN_BITS - 1 -: ROUND_ROBIN_BITS];
+                        2'h3: codeword_d[((CODEWORD_WIDTH / ROUND_ROBIN_BITS - (AM_LANES * i)) - j) * ROUND_ROBIN_BITS - 1 -: ROUND_ROBIN_BITS] =
+                                stored_lanes[j][(TOTAL_CODEWORDS * i + (k+1)) * ROUND_ROBIN_BITS - 1 -: ROUND_ROBIN_BITS];
+                    endcase
                 end
             end
-
-        end
-        else begin
-            codeword_a = codeword_a;
-            codeword_b = codeword_b;
-            codeword_c = codeword_c;
-            codeword_d = codeword_d;
         end
 
         // Extrae las codewords sin FEC
@@ -282,6 +339,11 @@ module aui_checker #(
 
     always_ff @(posedge clk or posedge rst) begin
         if (rst) begin
+            // Reiniciar el mapeo de lanes
+            mapping_complete <= 0;
+            for (int i = 0; i < AM_LANES; i++) begin
+                lane_mapping[i] <= 4'h0;
+            end
             // Reiniciar los contadores, los gaps, las banderas de error y las señales de sincronización al reset
             for (int i = 0; i < AM_LANES - 1; i =  i + 1'b1) begin
                 cycle_counter[i] <= {TOTAL_CYCLES_WIDTH {1'b0}};
@@ -290,6 +352,19 @@ module aui_checker #(
             gap_error_flag <= {AM_LANES {1'b0}}; // Inicializar todas las banderas de error en 0
             has_synced     <= {AM_LANES {1'b0}};     // Inicializar las señales de sincronización en 0
         end else begin
+        
+            // Si los lanes no están mapeados, comienzo a detectarlos
+            if (!mapping_complete) begin
+                for (int i = 0; i < AM_LANES; i++) begin
+                    for (int j = 0; j < AM_LANES; j++) begin
+                        if (extracted_am[i] == expected_am[j]) begin
+                            lane_mapping[j] <= i;
+                        end
+                    end
+                end
+                mapping_complete <= 1;
+            end
+            
             // Procesar cada línea de sincronización
 
             for(int i = 0; i < AM_LANES - 1; i = i + 1'b1) begin
