@@ -83,12 +83,12 @@ module aui_generator #(
             am[3] =  120'h9a4a265a65b5d984797f2f7b8680d0;
             am[4] =  120'h9a4a26e165b5d919d5ae0de62a51f2;
             am[5] =  120'h9a4a26f265b5d94eedb02eb1124fd1;
-            am[6] =  120'h9a4a263d65b5d9eebd635e11429ca1;
+            am[9] =  120'h9a4a263d65b5d9eebd635e11429ca1;
             am[7] =  120'h9a4a262265b5d9322989a4cdd6765b;
             am[8] =  120'h9a4a266065b5d99f1e8c8a60e17375;
-            am[9] =  120'h9a4a266b65b5d9a28e3bc35d71c43c;
-            am[10] =  120'h9a4a26fa65b5d9046a1427fb95ebd8;
-            am[11] =  120'h9a4a266c65b5d971dd99c78e226638;
+            am[6] =  120'h9a4a266b65b5d9a28e3bc35d71c43c;
+            am[11] =  120'h9a4a26fa65b5d9046a1427fb95ebd8;
+            am[10] =  120'h9a4a266c65b5d971dd99c78e226638;
             am[12] =  120'h9a4a261865b5d95b5d096aa4a2f695;
             am[13] =  120'h9a4a261465b5d9ccce683c333197c3;
             am[14] =  120'h9a4a26d065b5d9b13504594ecafba6;

@@ -47,7 +47,8 @@ module aui_checker #(
 
     localparam AM_WIDTH = 120; // ancho de los AMs
     localparam AM_LANES = 16; // cantidad de lineas
-    localparam AM_LANES_WIDTH = $clog2(AM_LANES); // ancho de las lineas
+    //localparam AM_LANES_WIDTH = $clog2(AM_LANES); // ancho de las lineas
+    localparam AM_LANES_WIDTH = 4; // ancho de las lineas
     localparam BYTE_SIZE = 8; 
     localparam TOTAL_CYCLES = 8191; // cantidad de ciclos hasta la aparicion de los AM's
     localparam TOTAL_CYCLES_WIDTH = $clog2(TOTAL_CYCLES);
@@ -79,7 +80,7 @@ module aui_checker #(
         EXPECTED_AM_LANE_13 = 120'hC39731333C68CECCD9B56514264A9A,
         EXPECTED_AM_LANE_14 = 120'hA6FBCA4E590435B1D9B565D0264A9A,
         EXPECTED_AM_LANE_15 = 120'h79BAA6A986455956D9B565B4264A9A;
-
+/*
     // índices para ordenar las líneas
     localparam [AM_LANES_WIDTH : 0]
         AM_LANE_0  = 4'h0,
@@ -98,6 +99,15 @@ module aui_checker #(
         AM_LANE_13 = 4'hD,
         AM_LANE_14 = 4'hE,
         AM_LANE_15 = 4'hF;
+*/
+    
+    // Índices por defecto de las lanes
+    localparam [AM_LANES_WIDTH-1 : 0] AM_LANE [0 : AM_LANES-1] = '{
+        4'h0, 4'h1, 4'h2, 4'h3,
+        4'h4, 4'h5, 4'h6, 4'h7,
+        4'h8, 4'h9, 4'hA, 4'hB,
+        4'hC, 4'hD, 4'hE, 4'hF
+    };
 
     // Alignment markers esperados segun estandar
     logic [AM_WIDTH              - 1 : 0] expected_am     [0 : AM_LANES - 1];    // 16 vias de 120 bits cada una
@@ -145,62 +155,62 @@ module aui_checker #(
     logic [AM_MAPPED_WIDTH       - 1 : 0] am_mapped_1;
 
     // Guardamos los valores de AM parametrizado en el registro usado en la comparación
-    assign expected_am[AM_LANE_0 ]  = EXPECTED_AM_LANE_0;
-    assign expected_am[AM_LANE_1 ]  = EXPECTED_AM_LANE_1;
-    assign expected_am[AM_LANE_2 ]  = EXPECTED_AM_LANE_2;
-    assign expected_am[AM_LANE_3 ]  = EXPECTED_AM_LANE_3;
-    assign expected_am[AM_LANE_4 ]  = EXPECTED_AM_LANE_4;
-    assign expected_am[AM_LANE_5 ]  = EXPECTED_AM_LANE_5;
-    assign expected_am[AM_LANE_6 ]  = EXPECTED_AM_LANE_6;
-    assign expected_am[AM_LANE_7 ]  = EXPECTED_AM_LANE_7;
-    assign expected_am[AM_LANE_8 ]  = EXPECTED_AM_LANE_8;
-    assign expected_am[AM_LANE_9 ]  = EXPECTED_AM_LANE_9;
-    assign expected_am[AM_LANE_10] = EXPECTED_AM_LANE_10;
-    assign expected_am[AM_LANE_11] = EXPECTED_AM_LANE_11;
-    assign expected_am[AM_LANE_12] = EXPECTED_AM_LANE_12;
-    assign expected_am[AM_LANE_13] = EXPECTED_AM_LANE_13;
-    assign expected_am[AM_LANE_14] = EXPECTED_AM_LANE_14;
-    assign expected_am[AM_LANE_15] = EXPECTED_AM_LANE_15;
+    assign expected_am[AM_LANE[0] ]  = EXPECTED_AM_LANE_0;
+    assign expected_am[AM_LANE[1] ]  = EXPECTED_AM_LANE_1;
+    assign expected_am[AM_LANE[2] ]  = EXPECTED_AM_LANE_2;
+    assign expected_am[AM_LANE[3] ]  = EXPECTED_AM_LANE_3;
+    assign expected_am[AM_LANE[4] ]  = EXPECTED_AM_LANE_4;
+    assign expected_am[AM_LANE[5] ]  = EXPECTED_AM_LANE_5;
+    assign expected_am[AM_LANE[6] ]  = EXPECTED_AM_LANE_6;
+    assign expected_am[AM_LANE[7] ]  = EXPECTED_AM_LANE_7;
+    assign expected_am[AM_LANE[8] ]  = EXPECTED_AM_LANE_8;
+    assign expected_am[AM_LANE[9] ]  = EXPECTED_AM_LANE_9;
+    assign expected_am[AM_LANE[10]] = EXPECTED_AM_LANE_10;
+    assign expected_am[AM_LANE[11]] = EXPECTED_AM_LANE_11;
+    assign expected_am[AM_LANE[12]] = EXPECTED_AM_LANE_12;
+    assign expected_am[AM_LANE[13]] = EXPECTED_AM_LANE_13;
+    assign expected_am[AM_LANE[14]] = EXPECTED_AM_LANE_14;
+    assign expected_am[AM_LANE[15]] = EXPECTED_AM_LANE_15;
 
     // Idem con las banderas de sincronización que indican que hay presencia de un AM
-    assign sync_lanes [AM_LANE_0 ] = sync_lane_0;
-    assign sync_lanes [AM_LANE_1 ] = sync_lane_1;
-    assign sync_lanes [AM_LANE_2 ] = sync_lane_2;
-    assign sync_lanes [AM_LANE_3 ] = sync_lane_3;
-    assign sync_lanes [AM_LANE_4 ] = sync_lane_4;
-    assign sync_lanes [AM_LANE_5 ] = sync_lane_5;
-    assign sync_lanes [AM_LANE_6 ] = sync_lane_6;
-    assign sync_lanes [AM_LANE_7 ] = sync_lane_7;
-    assign sync_lanes [AM_LANE_8 ] = sync_lane_8;
-    assign sync_lanes [AM_LANE_9 ] = sync_lane_9;
-    assign sync_lanes [AM_LANE_10] = sync_lane_10;
-    assign sync_lanes [AM_LANE_11] = sync_lane_11;
-    assign sync_lanes [AM_LANE_12] = sync_lane_12;
-    assign sync_lanes [AM_LANE_13] = sync_lane_13;
-    assign sync_lanes [AM_LANE_14] = sync_lane_14;
-    assign sync_lanes [AM_LANE_15] = sync_lane_15;
+    assign sync_lanes [AM_LANE[0] ] = sync_lane_0;
+    assign sync_lanes [AM_LANE[1] ] = sync_lane_1;
+    assign sync_lanes [AM_LANE[2] ] = sync_lane_2;
+    assign sync_lanes [AM_LANE[3] ] = sync_lane_3;
+    assign sync_lanes [AM_LANE[4] ] = sync_lane_4;
+    assign sync_lanes [AM_LANE[5] ] = sync_lane_5;
+    assign sync_lanes [AM_LANE[6] ] = sync_lane_6;
+    assign sync_lanes [AM_LANE[7] ] = sync_lane_7;
+    assign sync_lanes [AM_LANE[8] ] = sync_lane_8;
+    assign sync_lanes [AM_LANE[9] ] = sync_lane_9;
+    assign sync_lanes [AM_LANE[10]] = sync_lane_10;
+    assign sync_lanes [AM_LANE[11]] = sync_lane_11;
+    assign sync_lanes [AM_LANE[12]] = sync_lane_12;
+    assign sync_lanes [AM_LANE[13]] = sync_lane_13;
+    assign sync_lanes [AM_LANE[14]] = sync_lane_14;
+    assign sync_lanes [AM_LANE[15]] = sync_lane_15;
     
     always_comb begin
         
 
         // Verifico si han sido ordenados los lanes, sino uso la información tal cual viene
         if (!mapping_complete) begin
-            stored_lanes[AM_LANE_0 ] = i_lane_0;
-            stored_lanes[AM_LANE_1 ] = i_lane_1;
-            stored_lanes[AM_LANE_2 ] = i_lane_2;
-            stored_lanes[AM_LANE_3 ] = i_lane_3;
-            stored_lanes[AM_LANE_4 ] = i_lane_4;
-            stored_lanes[AM_LANE_5 ] = i_lane_5;
-            stored_lanes[AM_LANE_6 ] = i_lane_6;
-            stored_lanes[AM_LANE_7 ] = i_lane_7;
-            stored_lanes[AM_LANE_8 ] = i_lane_8;
-            stored_lanes[AM_LANE_9 ] = i_lane_9;
-            stored_lanes[AM_LANE_10] = i_lane_10;
-            stored_lanes[AM_LANE_11] = i_lane_11;
-            stored_lanes[AM_LANE_12] = i_lane_12;
-            stored_lanes[AM_LANE_13] = i_lane_13;
-            stored_lanes[AM_LANE_14] = i_lane_14;
-            stored_lanes[AM_LANE_15] = i_lane_15;
+            stored_lanes[AM_LANE[0] ] = i_lane_0;
+            stored_lanes[AM_LANE[1] ] = i_lane_1;
+            stored_lanes[AM_LANE[2] ] = i_lane_2;
+            stored_lanes[AM_LANE[3] ] = i_lane_3;
+            stored_lanes[AM_LANE[4] ] = i_lane_4;
+            stored_lanes[AM_LANE[5] ] = i_lane_5;
+            stored_lanes[AM_LANE[6] ] = i_lane_6;
+            stored_lanes[AM_LANE[7] ] = i_lane_7;
+            stored_lanes[AM_LANE[8] ] = i_lane_8;
+            stored_lanes[AM_LANE[9] ] = i_lane_9;
+            stored_lanes[AM_LANE[10]] = i_lane_10;
+            stored_lanes[AM_LANE[11]] = i_lane_11;
+            stored_lanes[AM_LANE[12]] = i_lane_12;
+            stored_lanes[AM_LANE[13]] = i_lane_13;
+            stored_lanes[AM_LANE[14]] = i_lane_14;
+            stored_lanes[AM_LANE[15]] = i_lane_15;
         end 
         // Si los lanes ya han sido ordenados, utilizo orden segun lane_mapping
         else begin
@@ -222,24 +232,28 @@ module aui_checker #(
             stored_lanes[lane_mapping[15]] = i_lane_15;
         end
         
+        
+        // FALTA ORDENAR LOS SYNC LANE
+        
+        
         // Cargar los valores solo si el sync_lane correspondiente está activo
         // Extraer los últimos 120 bits de cada lane si el sync_lane correspondiente está en 1
-        extracted_am[AM_LANE_0 ] = sync_lane_0  ? stored_lanes[AM_LANE_0 ][AM_WIDTH - 1 : 0]  : {AM_WIDTH{1'b0}};
-        extracted_am[AM_LANE_1 ] = sync_lane_1  ? stored_lanes[AM_LANE_1 ][AM_WIDTH - 1 : 0]  : {AM_WIDTH{1'b0}};
-        extracted_am[AM_LANE_2 ] = sync_lane_2  ? stored_lanes[AM_LANE_2 ][AM_WIDTH - 1 : 0]  : {AM_WIDTH{1'b0}};
-        extracted_am[AM_LANE_3 ] = sync_lane_3  ? stored_lanes[AM_LANE_3 ][AM_WIDTH - 1 : 0]  : {AM_WIDTH{1'b0}};
-        extracted_am[AM_LANE_4 ] = sync_lane_4  ? stored_lanes[AM_LANE_4 ][AM_WIDTH - 1 : 0]  : {AM_WIDTH{1'b0}};
-        extracted_am[AM_LANE_5 ] = sync_lane_5  ? stored_lanes[AM_LANE_5 ][AM_WIDTH - 1 : 0]  : {AM_WIDTH{1'b0}};
-        extracted_am[AM_LANE_6 ] = sync_lane_6  ? stored_lanes[AM_LANE_6 ][AM_WIDTH - 1 : 0]  : {AM_WIDTH{1'b0}};
-        extracted_am[AM_LANE_7 ] = sync_lane_7  ? stored_lanes[AM_LANE_7 ][AM_WIDTH - 1 : 0]  : {AM_WIDTH{1'b0}};
-        extracted_am[AM_LANE_8 ] = sync_lane_8  ? stored_lanes[AM_LANE_8 ][AM_WIDTH - 1 : 0]  : {AM_WIDTH{1'b0}};
-        extracted_am[AM_LANE_9 ] = sync_lane_9  ? stored_lanes[AM_LANE_9 ][AM_WIDTH - 1 : 0]  : {AM_WIDTH{1'b0}};
-        extracted_am[AM_LANE_10] = sync_lane_10 ? stored_lanes[AM_LANE_10][AM_WIDTH - 1 : 0]  : {AM_WIDTH{1'b0}};
-        extracted_am[AM_LANE_11] = sync_lane_11 ? stored_lanes[AM_LANE_11][AM_WIDTH - 1 : 0]  : {AM_WIDTH{1'b0}};
-        extracted_am[AM_LANE_12] = sync_lane_12 ? stored_lanes[AM_LANE_12][AM_WIDTH - 1 : 0]  : {AM_WIDTH{1'b0}};
-        extracted_am[AM_LANE_13] = sync_lane_13 ? stored_lanes[AM_LANE_13][AM_WIDTH - 1 : 0]  : {AM_WIDTH{1'b0}};
-        extracted_am[AM_LANE_14] = sync_lane_14 ? stored_lanes[AM_LANE_14][AM_WIDTH - 1 : 0]  : {AM_WIDTH{1'b0}};
-        extracted_am[AM_LANE_15] = sync_lane_15 ? stored_lanes[AM_LANE_15][AM_WIDTH - 1 : 0]  : {AM_WIDTH{1'b0}};
+            extracted_am[AM_LANE[0] ] = sync_lane_0  ? stored_lanes[AM_LANE[0] ][AM_WIDTH - 1 : 0]  : {AM_WIDTH{1'b0}};
+            extracted_am[AM_LANE[1] ] = sync_lane_1  ? stored_lanes[AM_LANE[1] ][AM_WIDTH - 1 : 0]  : {AM_WIDTH{1'b0}};
+            extracted_am[AM_LANE[2] ] = sync_lane_2  ? stored_lanes[AM_LANE[2] ][AM_WIDTH - 1 : 0]  : {AM_WIDTH{1'b0}};
+            extracted_am[AM_LANE[3] ] = sync_lane_3  ? stored_lanes[AM_LANE[3] ][AM_WIDTH - 1 : 0]  : {AM_WIDTH{1'b0}};
+            extracted_am[AM_LANE[4] ] = sync_lane_4  ? stored_lanes[AM_LANE[4] ][AM_WIDTH - 1 : 0]  : {AM_WIDTH{1'b0}};
+            extracted_am[AM_LANE[5] ] = sync_lane_5  ? stored_lanes[AM_LANE[5] ][AM_WIDTH - 1 : 0]  : {AM_WIDTH{1'b0}};
+            extracted_am[AM_LANE[6] ] = sync_lane_6  ? stored_lanes[AM_LANE[6] ][AM_WIDTH - 1 : 0]  : {AM_WIDTH{1'b0}};
+            extracted_am[AM_LANE[7] ] = sync_lane_7  ? stored_lanes[AM_LANE[7] ][AM_WIDTH - 1 : 0]  : {AM_WIDTH{1'b0}};
+            extracted_am[AM_LANE[8] ] = sync_lane_8  ? stored_lanes[AM_LANE[8] ][AM_WIDTH - 1 : 0]  : {AM_WIDTH{1'b0}};
+            extracted_am[AM_LANE[9] ] = sync_lane_9  ? stored_lanes[AM_LANE[9] ][AM_WIDTH - 1 : 0]  : {AM_WIDTH{1'b0}};
+            extracted_am[AM_LANE[10]] = sync_lane_10 ? stored_lanes[AM_LANE[10]][AM_WIDTH - 1 : 0]  : {AM_WIDTH{1'b0}};
+            extracted_am[AM_LANE[11]] = sync_lane_11 ? stored_lanes[AM_LANE[11]][AM_WIDTH - 1 : 0]  : {AM_WIDTH{1'b0}};
+            extracted_am[AM_LANE[12]] = sync_lane_12 ? stored_lanes[AM_LANE[12]][AM_WIDTH - 1 : 0]  : {AM_WIDTH{1'b0}};
+            extracted_am[AM_LANE[13]] = sync_lane_13 ? stored_lanes[AM_LANE[13]][AM_WIDTH - 1 : 0]  : {AM_WIDTH{1'b0}};
+            extracted_am[AM_LANE[14]] = sync_lane_14 ? stored_lanes[AM_LANE[14]][AM_WIDTH - 1 : 0]  : {AM_WIDTH{1'b0}};
+            extracted_am[AM_LANE[15]] = sync_lane_15 ? stored_lanes[AM_LANE[15]][AM_WIDTH - 1 : 0]  : {AM_WIDTH{1'b0}};
         
         // Comparo AMs uno por uno, recibidos con los codificados, para saber si alguna lane recibe un AM incorrecto
         for (int i = 0; i < AM_LANES; i = i + 1'b1) begin
