@@ -302,7 +302,7 @@ module aui_checker #(
                 lane_mapping[i] <= 4'h0;
             end
             // Reiniciar los contadores, los gaps, las banderas de error y las señales de sincronización al reset
-            for (int i = 0; i < AM_LANES - 1; i =  i + 1'b1) begin
+            for (int i = 0; i <= AM_LANES - 1; i =  i + 1'b1) begin
                 cycle_counter[i] <= {TOTAL_CYCLES_WIDTH {1'b0}};
                 cycle_gap    [i] <= {TOTAL_CYCLES_WIDTH {1'b0}};
             end
@@ -324,7 +324,7 @@ module aui_checker #(
             
             // Procesar cada línea de sincronización
 
-            for(int i = 0; i < AM_LANES - 1; i = i + 1'b1) begin
+            for(int i = 0; i <= AM_LANES - 1; i = i + 1'b1) begin
                 if (sync_lanes[i]) begin
                     cycle_gap [i] <= cycle_counter[i];
                     cycle_counter[i] <= {TOTAL_CYCLES_WIDTH{1'b0}};
